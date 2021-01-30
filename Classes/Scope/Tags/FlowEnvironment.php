@@ -3,12 +3,8 @@ declare(strict_types=1);
 
 namespace Netlogix\Sentry\Scope\Tags;
 
-use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Utility\Environment;
 
-/**
- * @Flow\Proxy(false)
- */
 final class FlowEnvironment implements TagProvider
 {
 
