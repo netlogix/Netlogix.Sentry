@@ -7,7 +7,7 @@ interface TagProvider
 {
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, string>
      */
     public function getTags(): array;
 

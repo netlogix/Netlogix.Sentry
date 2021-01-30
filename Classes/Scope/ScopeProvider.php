@@ -7,17 +7,15 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
 use Neos\Utility\PositionalArraySorter;
 use Netlogix\Sentry\Exception\InvalidProviderType;
-use Netlogix\Sentry\Integration\NetlogixIntegration;
 use Netlogix\Sentry\Scope\Extra\ExtraProvider;
 use Netlogix\Sentry\Scope\Release\ReleaseProvider;
 use Netlogix\Sentry\Scope\Tags\TagProvider;
 use Netlogix\Sentry\Scope\User\UserProvider;
-use function Sentry\init;
 
 /**
  * @Flow\Scope("singleton")
  */
-class SentryConfiguration
+class ScopeProvider
 {
 
     private const SCOPE_EXTRA = 'extra';
@@ -57,13 +55,6 @@ class SentryConfiguration
     public function initializeObject(): void
     {
         $this->setupProviders();
-
-        init([
-            'dsn' => '',
-            'integrations' => [
-                new NetlogixIntegration()
-            ]
-        ]);
     }
 
     public function collectExtra(): array

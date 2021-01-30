@@ -1,9 +1,7 @@
 Netlogix:
   Sentry:
     scope:
-      extra:
-        'Netlogix\Sentry\Scope\Extra\BrowserContext': true
-        'Netlogix\Sentry\Scope\Extra\OsContext': true
+      extra: []
 
       release:
         # See Configuration/Settings.Release.yaml for settings
