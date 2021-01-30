@@ -1,0 +1,5 @@
+Neos:
+  Flow:
+    log:
+      throwables:
+        storageClass: Netlogix\Sentry\ThrowableStorage\SentryThrowableStorage
