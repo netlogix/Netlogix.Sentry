@@ -1,0 +1,17 @@
+Netlogix:
+  Sentry:
+    scope:
+      extra:
+        'Netlogix\Sentry\Scope\Extra\BrowserContext': true
+        'Netlogix\Sentry\Scope\Extra\OsContext': true
+
+      release:
+        # See Configuration/Settings.Release.yaml for settings
+        # Only one release provider should be active!
+        'Netlogix\Sentry\Scope\Release\PathPattern': true
+
+      tags:
+        'Netlogix\Sentry\Scope\Tags\FlowEnvironment': true
+
+      user:
+        'Netlogix\Sentry\Scope\User\FlowAccount': 'start 1000'

@@ -1,0 +1,7 @@
+Netlogix:
+  Sentry:
+    release:
+      # Pattern to extract current release from file path
+      # Used by Netlogix\Sentry\Scope\Release\PathPattern
+      # This pattern is matched against FLOW_PATH_ROOT
+      pathPattern: '~/releases/(\d{14})$~'
