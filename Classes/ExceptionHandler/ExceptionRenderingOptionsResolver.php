@@ -14,6 +14,11 @@ use Throwable;
 final class ExceptionRenderingOptionsResolver extends AbstractExceptionHandler
 {
 
+    /** @noinspection PhpMissingParentConstructorInspection */
+    public function __construct()
+    {
+    }
+
     public function resolveRenderingOptionsForThrowable(Throwable $throwable): array
     {
         return $this->resolveCustomRenderingOptions($throwable);

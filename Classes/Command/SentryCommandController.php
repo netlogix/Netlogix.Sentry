@@ -6,7 +6,7 @@ namespace Netlogix\Sentry\Command;
 use Neos\Flow\Cli\CommandController;
 use Neos\Flow\Annotations as Flow;
 use Netlogix\Sentry\Exception\Test;
-use Netlogix\Sentry\ScopeProvider;
+use Netlogix\Sentry\Scope\ScopeProvider;
 
 /**
  * @Flow\Scope("singleton")

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<phpunit
+    beStrictAboutChangesToGlobalState="true"
+    beStrictAboutOutputDuringTests="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    timeoutForSmallTests="0">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>./Tests/Unit/</directory>
+        </testsuite>
+        <testsuite name="Functional">
+            <directory>./Tests/Functional/</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./Classes</directory>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-html" target="Build/Artifacts/Reports/PhpUnit/Coverage"/>
+        <log type="coverage-clover" target="Build/Artifacts/Reports/PhpUnit/clover.xml"/>
+        <log type="coverage-crap4j" target="Build/Artifacts/Reports/PhpUnit/crap4j.xml"/>
+        <log type="junit" target="Build/Artifacts/Reports/PhpUnit/junit.xml"/>
+    </logging>
+    <php>
+        <ini name="date.timezone" value="Europe/Berlin"/>
+        <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
+        <env name="FLOW_REWRITEURLS" value="1"/>
+    </php>
+</phpunit>

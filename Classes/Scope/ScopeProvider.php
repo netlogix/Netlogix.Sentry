@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Netlogix\Sentry;
+namespace Netlogix\Sentry\Scope;
 
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
@@ -31,13 +31,11 @@ class ScopeProvider
     ];
 
     /**
-     * @Flow\InjectConfiguration(package="Netlogix.Sentry", path="scope")
      * @var array
      */
     protected $providerConfiguration;
 
     /**
-     * @Flow\Inject
      * @var ObjectManagerInterface
      */
     protected $objectManager;
@@ -51,6 +49,11 @@ class ScopeProvider
         self::SCOPE_TAGS => [],
         self::SCOPE_USER => [],
     ];
+
+    public function __construct(ObjectManagerInterface $objectManager)
+    {
+        $this->objectManager = $objectManager;
+    }
 
     public function initializeObject(): void
     {
@@ -109,12 +112,22 @@ class ScopeProvider
         return $user;
     }
 
+    public function injectSettings(array $settings): void
+    {
+        $this->providerConfiguration = $settings['scope'] ?? [];
+    }
+
     protected function setupProviders(): void
     {
         $scopes = array_keys($this->providers);
 
         foreach ($scopes as $scope) {
-            $providers = $this->providerConfiguration[$scope] ?? [];
+            $this->providers[$scope] = [];
+            if (!array_key_exists($scope, $this->providerConfiguration)) {
+                continue;
+            }
+
+            $providers = $this->providerConfiguration[$scope];
             $providers = array_filter($providers);
             $providers = array_map(function ($position) {
                 if ($position === true) {
