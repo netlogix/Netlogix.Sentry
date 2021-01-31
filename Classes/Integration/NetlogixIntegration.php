@@ -7,7 +7,7 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\ObjectManagement\CompileTimeObjectManager;
 use Netlogix\Sentry\ExceptionHandler\ExceptionRenderingOptionsResolver;
-use Netlogix\Sentry\ScopeProvider;
+use Netlogix\Sentry\Scope\ScopeProvider;
 use Sentry\Event;
 use Sentry\EventHint;
 use Sentry\Integration\IntegrationInterface;
