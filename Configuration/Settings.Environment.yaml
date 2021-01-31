@@ -1,0 +1,4 @@
+Netlogix:
+  Sentry:
+    environment:
+      setting: '%env:SENTRY_ENVIRONMENT%'

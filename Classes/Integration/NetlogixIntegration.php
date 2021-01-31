@@ -62,6 +62,7 @@ final class NetlogixIntegration implements IntegrationInterface
                 return;
             }
 
+            $event->setEnvironment($scopeProvider->collectEnvironment());
             $event->setExtra($scopeProvider->collectExtra());
             $event->setRelease($scopeProvider->collectRelease());
             $event->setTags($scopeProvider->collectTags());

@@ -7,6 +7,7 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
 use Neos\Utility\PositionalArraySorter;
 use Netlogix\Sentry\Exception\InvalidProviderType;
+use Netlogix\Sentry\Scope\Environment\EnvironmentProvider;
 use Netlogix\Sentry\Scope\Extra\ExtraProvider;
 use Netlogix\Sentry\Scope\Release\ReleaseProvider;
 use Netlogix\Sentry\Scope\Tags\TagProvider;
@@ -18,12 +19,14 @@ use Netlogix\Sentry\Scope\User\UserProvider;
 class ScopeProvider
 {
 
+    private const SCOPE_ENVIRONMENT = 'environment';
     private const SCOPE_EXTRA = 'extra';
     private const SCOPE_RELEASE = 'release';
     private const SCOPE_TAGS = 'tags';
     private const SCOPE_USER = 'user';
 
     private const SCOPE_TYPE_MAPPING = [
+        self::SCOPE_ENVIRONMENT => EnvironmentProvider::class,
         self::SCOPE_EXTRA => ExtraProvider::class,
         self::SCOPE_RELEASE => ReleaseProvider::class,
         self::SCOPE_TAGS => TagProvider::class,
@@ -44,6 +47,7 @@ class ScopeProvider
      * @var array<string, array<string, object>>
      */
     protected $providers = [
+        self::SCOPE_ENVIRONMENT => [],
         self::SCOPE_EXTRA => [],
         self::SCOPE_RELEASE => [],
         self::SCOPE_TAGS => [],
@@ -58,6 +62,19 @@ class ScopeProvider
     public function initializeObject(): void
     {
         $this->setupProviders();
+    }
+
+    public function collectEnvironment(): ?string
+    {
+        $environment = null;
+
+        foreach ($this->providers[self::SCOPE_ENVIRONMENT] as $provider) {
+            assert($provider instanceof EnvironmentProvider);
+
+            $environment = $provider->getEnvironment();
+        }
+
+        return $environment;
     }
 
     public function collectExtra(): array
