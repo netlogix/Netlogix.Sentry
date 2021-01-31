@@ -5,29 +5,35 @@ namespace Netlogix\Sentry\ThrowableStorage;
 
 use Neos\Flow\Log\ThrowableStorageInterface;
 use Neos\Flow\Annotations as Flow;
+use Sentry\State\Scope;
+use Throwable;
 use function Sentry\captureException;
+use function Sentry\withScope;
 
 /**
  * @Flow\Proxy(false)
  * @Flow\Autowiring(false)
  */
-class SentryStorage implements ThrowableStorageInterface
+final class SentryStorage implements ThrowableStorageInterface
 {
 
     public static function createWithOptions(array $options): ThrowableStorageInterface
     {
-        return new static();
+        return new SentryStorage();
     }
 
-    public function logThrowable(\Throwable $throwable, array $additionalData = [])
+    public function logThrowable(Throwable $throwable, array $additionalData = [])
     {
-        captureException($throwable);
+        withScope(function(Scope $scope) use (&$eventId, $throwable, $additionalData) {
+            $scope->setExtras($additionalData);
+            $eventId = captureException($throwable);
+        });
 
-        $errorCodeNumber = ($throwable->getCode() > 0) ? ' #' . $throwable->getCode() : '';
-        $backTrace = $throwable->getTrace();
-        $line = isset($backTrace[0]['line']) ? ' in line ' . $backTrace[0]['line'] . ' of ' . $backTrace[0]['file'] : '';
+        if ($eventId) {
+            return 'See sentry: ' . (string)$eventId;
+        }
 
-        return 'Exception' . $errorCodeNumber . $line . ': ' . $throwable->getMessage();
+        return '';
     }
 
     public function setRequestInformationRenderer(\Closure $requestInformationRenderer)
