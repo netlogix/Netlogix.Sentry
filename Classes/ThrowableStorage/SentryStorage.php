@@ -11,7 +11,7 @@ use function Sentry\captureException;
  * @Flow\Proxy(false)
  * @Flow\Autowiring(false)
  */
-class SentryThrowableStorage implements ThrowableStorageInterface
+class SentryStorage implements ThrowableStorageInterface
 {
 
     public static function createWithOptions(array $options): ThrowableStorageInterface
