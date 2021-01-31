@@ -26,10 +26,6 @@ final class NetlogixIntegration implements IntegrationInterface
     public function setupOnce(): void
     {
         Scope::addGlobalEventProcessor(static function (Event $event, EventHint $hint): ?Event {
-            if (!$hint->exception instanceof Throwable || Bootstrap::$staticObjectManager instanceof CompileTimeObjectManager) {
-                return $event;
-            }
-
             $integration = SentrySdk::getCurrentHub()->getIntegration(self::class);
             if ($integration === null) {
                 return $event;
@@ -41,14 +37,16 @@ final class NetlogixIntegration implements IntegrationInterface
 
     public static function handleEvent(Event $event, EventHint $hint): ?Event
     {
-        $optionsResolver = Bootstrap::$staticObjectManager->get(ExceptionRenderingOptionsResolver::class);
-        if (!$optionsResolver) {
+        if (Bootstrap::$staticObjectManager instanceof CompileTimeObjectManager) {
             return $event;
         }
 
-        $options = $optionsResolver->resolveRenderingOptionsForThrowable($hint->exception);
-        if (!($options['logException'] ?? true)) {
-            return null;
+        if ($hint->exception instanceof Throwable
+            && ($optionsResolver = Bootstrap::$staticObjectManager->get(ExceptionRenderingOptionsResolver::class)) !== null) {
+            $options = $optionsResolver->resolveRenderingOptionsForThrowable($hint->exception);
+            if (!($options['logException'] ?? true)) {
+                return null;
+            }
         }
 
         self::configureScopeForEvent($event);

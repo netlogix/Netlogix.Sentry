@@ -19,6 +19,39 @@ class NetlogixIntegrationTest extends UnitTestCase
 
     /**
      * @test
+     */
+    public function If_event_hint_does_not_contain_an_exception_it_is_not_filtered(): void
+    {
+        $objectManager = $this->getMockBuilder(ObjectManagerInterface::class)
+            ->getMock();
+
+        $optionsResolver = new ExceptionRenderingOptionsResolver();
+        $optionsResolver->setOptions([
+            'renderingGroups' => [
+                'netlogixSentryTest' => [
+                    'matchingExceptionClassNames' => [Test::class],
+                    'options' => [
+                        'logException' => false
+                    ]
+                ]
+            ]
+        ]);
+
+        $objectManager
+            ->method('get')
+            ->with(ExceptionRenderingOptionsResolver::class)
+            ->willReturn($optionsResolver);
+
+        Bootstrap::$staticObjectManager = $objectManager;
+
+        $event = Event::createEvent();
+        $hint = EventHint::fromArray(['exception' => null]);
+
+        self::assertSame($event, NetlogixIntegration::handleEvent($event, $hint));
+    }
+
+    /**
+     * @test
      * @dataProvider provideLogExceptionExpectations
      */
     public function Event_is_logged_depending_on_logException(array $options, bool $isLogged): void
@@ -79,9 +112,8 @@ class NetlogixIntegrationTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider provideLogExceptionExpectations
      */
-    public function Event_is_enriched_with_ScopeProvider_data(array $options, bool $isLogged): void
+    public function Event_is_enriched_with_ScopeProvider_data(): void
     {
         $objectManager = $this->getMockBuilder(ObjectManagerInterface::class)
             ->getMock();
@@ -138,6 +170,50 @@ class NetlogixIntegrationTest extends UnitTestCase
 
         self::assertInstanceOf(UserDataBag::class, $event->getUser());
         self::assertSame('lars', $event->getUser()->getUsername());
+    }
+
+    /**
+     * @test
+     */
+    public function Events_are_also_enriched_if_hint_does_not_contain_a_throwable(): void
+    {
+        $objectManager = $this->getMockBuilder(ObjectManagerInterface::class)
+            ->getMock();
+
+        $scopeProvider = $this->getMockBuilder(ScopeProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $scopeProvider
+            ->method('collectExtra')
+            ->willReturn([]);
+
+        $scopeProvider
+            ->method('collectRelease')
+            ->willReturn('release-123');
+
+        $scopeProvider
+            ->method('collectTags')
+            ->willReturn([]);
+
+        $scopeProvider
+            ->method('collectUser')
+            ->willReturn([]);
+
+        $objectManager
+            ->method('get')
+            ->with(ScopeProvider::class)
+            ->willReturn($scopeProvider);
+
+        Bootstrap::$staticObjectManager = $objectManager;
+
+        $event = Event::createEvent();
+        $hint = EventHint::fromArray([]);
+
+        $enrichedEvent = NetlogixIntegration::handleEvent($event, $hint);
+
+        self::assertSame($event, $enrichedEvent);
+        self::assertSame('release-123', $event->getRelease());
     }
 
 }
