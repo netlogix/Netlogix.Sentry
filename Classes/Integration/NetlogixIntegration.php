@@ -34,32 +34,42 @@ final class NetlogixIntegration implements IntegrationInterface
             if ($integration === null) {
                 return $event;
             }
-            assert($integration instanceof NetlogixIntegration);
 
-            $optionsResolver = Bootstrap::$staticObjectManager->get(ExceptionRenderingOptionsResolver::class);
-
-            $options = $optionsResolver->resolveRenderingOptionsForThrowable($hint->exception);
-            if ($options['logException'] ?? false) {
-                return null;
-            }
-
-            self::configureScopeForEvent($event);
-
-            return $event;
+            return self::handleEvent($event, $hint);
         });
+    }
+
+    public static function handleEvent(Event $event, EventHint $hint): ?Event
+    {
+        $optionsResolver = Bootstrap::$staticObjectManager->get(ExceptionRenderingOptionsResolver::class);
+        if (!$optionsResolver) {
+            return $event;
+        }
+
+        $options = $optionsResolver->resolveRenderingOptionsForThrowable($hint->exception);
+        if (!($options['logException'] ?? true)) {
+            return null;
+        }
+
+        self::configureScopeForEvent($event);
+
+        return $event;
     }
 
     private static function configureScopeForEvent(Event $event): void
     {
         try {
             $scopeProvider = Bootstrap::$staticObjectManager->get(ScopeProvider::class);
+            if (!$scopeProvider) {
+                return;
+            }
 
             $event->setExtra($scopeProvider->collectExtra());
             $event->setRelease($scopeProvider->collectRelease());
             $event->setTags($scopeProvider->collectTags());
             $userData = $scopeProvider->collectUser();
             $event->setUser($userData !== [] ? UserDataBag::createFromArray($userData) : null);
-        } catch (\Throwable $t) {
+        } catch (Throwable $t) {
         }
     }
 
