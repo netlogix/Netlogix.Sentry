@@ -106,7 +106,7 @@ final class CompoundStorage implements ThrowableStorageInterface
 
     private function createStorage(string $storageClassName): ThrowableStorageInterface
     {
-        assert($storageClassName instanceof ThrowableStorageInterface);
+        assert(is_a($storageClassName, ThrowableStorageInterface::class, true));
         $bootstrap = Bootstrap::$staticObjectManager->get(Bootstrap::class);
         $configurationManager = $bootstrap->getEarlyInstance(ConfigurationManager::class);
         $settings = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Neos.Flow');
