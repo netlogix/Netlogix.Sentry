@@ -4,18 +4,18 @@ on: [ push, pull_request ]
 
 jobs:
   unittests:
-    name: '[PHP ${{ matrix.php-versions }} | Flow ${{ matrix.flow-versions }}] Functional Tests'
+    name: '[PHP ${{ matrix.php-version }} | Flow ${{ matrix.flow-version }}] Functional Tests'
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        php-versions: [ 7.2, 7.3, 7.4 ]
-        flow-versions: [ 6.3, 7.0 ]
+        php-version: [ 7.2, 7.3, 7.4 ]
+        flow-version: [ 6.3, 7.0 ]
         exclude:
           # Disable Flow 7.0 on PHP 7.2, as 7.3 is required
-          - php-versions: 7.2
-            flow-versions: 7.0
+          - php-version: 7.2
+            flow-version: 7.0
 
     env:
       APP_ENV: true
@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, json, zlib, iconv, intl, pdo_sqlite
           ini-values: opcache.fast_shutdown=0
 
@@ -33,12 +33,12 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}-flow-${{ matrix.flow-versions }}-composer-${{ hashFiles('composer.json') }}
+          key: php-${{ matrix.php-version }}-flow-${{ matrix.flow-version }}-composer-${{ hashFiles('composer.json') }}
           restore-keys: |
-            php-${{ matrix.php-versions }}-flow-${{ matrix.flow-versions }}-composer-
-            php-${{ matrix.php-versions }}-flow-
+            php-${{ matrix.php-version }}-flow-${{ matrix.flow-version }}-composer-
+            php-${{ matrix.php-version }}-flow-
       - name: Install composer dependencies
-        run: composer create-project neos/flow-base-distribution ${{ env.FLOW_DIST_FOLDER }} --prefer-dist --no-progress "^${{ matrix.flow-versions }}"
+        run: composer create-project neos/flow-base-distribution ${{ env.FLOW_DIST_FOLDER }} --prefer-dist --no-progress "^${{ matrix.flow-version }}"
 
       - name: Checkout code
         uses: actions/checkout@v2
