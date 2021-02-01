@@ -12,6 +12,10 @@ jobs:
             matrix:
                 php-versions: [7.2, 7.3, 7.4]
                 flow-versions: [6.3, 7.0]
+                exclude:
+                  # Disable Flow 7.0 on PHP 7.2, as 7.3 is required
+                  - php-versions: 7.2
+                    flow-versions: 7.0
 
         env:
             APP_ENV: true
