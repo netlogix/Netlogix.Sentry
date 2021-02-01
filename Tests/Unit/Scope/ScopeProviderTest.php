@@ -6,6 +6,7 @@ namespace Netlogix\Sentry\Tests\Functional\Scope;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
 use Neos\Flow\Tests\UnitTestCase;
 use Netlogix\Sentry\Exception\InvalidProviderType;
+use Netlogix\Sentry\Scope\Environment\EnvironmentProvider;
 use Netlogix\Sentry\Scope\Extra\ExtraProvider;
 use Netlogix\Sentry\Scope\Release\ReleaseProvider;
 use Netlogix\Sentry\Scope\ScopeProvider;
@@ -137,25 +138,76 @@ class ScopeProviderTest extends UnitTestCase
 
     public function provideInvalidProviderTypes(): iterable
     {
+        yield 'environment stdClass' => ['scope' => 'environment', 'provider' => new \stdClass()];
+        yield 'environment Extra' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
+        yield 'environment Release' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
+        yield 'environment Tag' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(TagProvider::class)->getMock()];
+        yield 'environment User' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
+
         yield 'extra stdClass' => ['scope' => 'extra', 'provider' => new \stdClass()];
+        yield 'extra Environment' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'extra Release' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
         yield 'extra Tag' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(TagProvider::class)->getMock()];
         yield 'extra User' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
 
         yield 'release stdClass' => ['scope' => 'release', 'provider' => new \stdClass()];
+        yield 'release Environment' => ['scope' => 'release', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'release Extra' => ['scope' => 'release', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
         yield 'release Tag' => ['scope' => 'release', 'provider' => $this->getMockBuilder(TagProvider::class)->getMock()];
         yield 'release User' => ['scope' => 'release', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
 
         yield 'tags stdClass' => ['scope' => 'tags', 'provider' => new \stdClass()];
+        yield 'tags Environment' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'tags Extra' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
         yield 'tags Release' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
         yield 'tags User' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
 
         yield 'user stdClass' => ['scope' => 'user', 'provider' => new \stdClass()];
+        yield 'user Environment' => ['scope' => 'user', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'user Extra' => ['scope' => 'user', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
         yield 'user Release' => ['scope' => 'user', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
         yield 'user Tag' => ['scope' => 'user', 'provider' => $this->getMockBuilder(TagProvider::class)->getMock()];
+    }
+
+    /**
+     * @test
+     */
+    public function only_last_environment_is_returned(): void
+    {
+        $environment1 = $this->getMockBuilder(EnvironmentProvider::class)
+            ->setMockClassName('EnvironmentMock1')
+            ->getMock();
+        $environment1
+            ->method('getEnvironment')
+            ->willReturn('machine-1');
+        $environment2 = $this->getMockBuilder(EnvironmentProvider::class)
+            ->setMockClassName('EnvironmentMock2')
+            ->getMock();
+        $environment2
+            ->method('getEnvironment')
+            ->willReturn('machine-2');
+
+        $this->objectManagerMock
+            ->expects(self::exactly(2))
+            ->method('get')
+            ->withConsecutive(['EnvironmentMock1'], ['EnvironmentMock2'])
+            ->willReturnOnConsecutiveCalls($environment1, $environment2);
+
+        $this->provider->injectSettings([
+            'scope' => [
+                'environment' => [
+                    get_class($environment1) => '10',
+                    get_class($environment2) => '20',
+                ]
+            ]
+        ]);
+
+        $this->provider->initializeObject();
+
+        self::assertSame(
+            'machine-2',
+            $this->provider->collectEnvironment()
+        );
     }
 
     /**

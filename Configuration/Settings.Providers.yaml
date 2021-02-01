@@ -1,6 +1,11 @@
 Netlogix:
   Sentry:
     scope:
+      environment:
+        # See Configuration/Environment.yaml for settings
+        # Only one environment provider should be active!
+        'Netlogix\Sentry\Scope\Environment\FlowSettings': true
+
       extra: []
 
       release:
@@ -12,4 +17,4 @@ Netlogix:
         'Netlogix\Sentry\Scope\Tags\FlowEnvironment': true
 
       user:
-        'Netlogix\Sentry\Scope\User\FlowAccount': 'start 1000'
+        'Netlogix\Sentry\Scope\User\FlowAccount': true

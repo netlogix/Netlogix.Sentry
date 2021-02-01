@@ -35,6 +35,11 @@ class SentryCommandController extends CommandController
      */
     public function showScopeCommand(): void
     {
+        $this->outputLine('Scope Environment:');
+        \Neos\Flow\var_dump($this->scopeProvider->collectEnvironment());
+
+        $this->outputLine();
+
         $this->outputLine('Scope Extra:');
         \Neos\Flow\var_dump($this->scopeProvider->collectExtra());
 

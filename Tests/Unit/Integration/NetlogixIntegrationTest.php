@@ -124,6 +124,11 @@ class NetlogixIntegrationTest extends UnitTestCase
 
         $scopeProvider
             ->expects(self::once())
+            ->method('collectEnvironment')
+            ->willReturn('my-machine');
+
+        $scopeProvider
+            ->expects(self::once())
             ->method('collectExtra')
             ->willReturn(['foo' => 'bar']);
 
@@ -157,6 +162,8 @@ class NetlogixIntegrationTest extends UnitTestCase
         $enrichedEvent = NetlogixIntegration::handleEvent($event, $hint);
 
         self::assertSame($event, $enrichedEvent);
+
+        self::assertSame('my-machine', $event->getEnvironment());
 
         $extra = $event->getExtra();
         self::assertArrayHasKey('foo', $extra);
