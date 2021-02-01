@@ -2,4 +2,10 @@ Neos:
   Flow:
     log:
       throwables:
-        storageClass: Netlogix\Sentry\ThrowableStorage\SentryThrowableStorage
+        storageClass: Netlogix\Sentry\ThrowableStorage\CompoundStorage
+
+        optionsByImplementation:
+          'Netlogix\Sentry\ThrowableStorage\CompoundStorage':
+            storages:
+              - 'Neos\Flow\Log\ThrowableStorage\FileStorage'
+              - 'Netlogix\Sentry\ThrowableStorage\SentryStorage'
