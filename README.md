@@ -11,6 +11,7 @@ configure and extend this package to fit your needs.
 Currently the following Flow versions are supported:
 
 * `^6.3`
+* `^7.0`
 
 ## Setup
 
