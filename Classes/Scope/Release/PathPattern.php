@@ -24,7 +24,7 @@ final class PathPattern implements ReleaseProvider
     public function getRelease(): ?string
     {
         $path = trim(realpath($this->pathToMatch), '/');
-        if (preg_match($this->pathPattern, $path, $matches) === 1) {
+        if (@preg_match($this->pathPattern, $path, $matches) === 1) {
             return $matches[1];
         }
 
