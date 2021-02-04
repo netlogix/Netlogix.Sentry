@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Netlogix\Sentry\Tests\Functional\ThrowableStorage;
 
+use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Tests\FunctionalTestCase;
 use Netlogix\Sentry\Exception\Test;
 use Netlogix\Sentry\ThrowableStorage\CompoundStorage;
@@ -69,6 +70,28 @@ class CompoundStorageTest extends FunctionalTestCase
 
         self::assertSame($backtraceRenderer, TestThrowableStorage1::$backtraceRenderer);
         self::assertSame($backtraceRenderer, TestThrowableStorage2::$backtraceRenderer);
+    }
+
+    /**
+     * @test
+     */
+    public function When_Bootstrap_staticObjectManager_is_unset_the_logged_exception_is_thrown(): void
+    {
+        $storage = CompoundStorage::createWithOptions([
+            'storages' => [
+                TestThrowableStorage1::class,
+                TestThrowableStorage2::class,
+            ]
+        ]);
+
+        Bootstrap::$staticObjectManager = null;
+
+        $throwable = new Test('foo', 1);
+
+        self::expectException(Test::class);
+        self::expectExceptionCode(1);
+
+        $storage->logThrowable($throwable);
     }
 
 }

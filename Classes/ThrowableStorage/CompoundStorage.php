@@ -83,7 +83,10 @@ final class CompoundStorage implements ThrowableStorageInterface
 
     public function logThrowable(\Throwable $throwable, array $additionalData = [])
     {
-        $this->initializeStorages();
+        if (!$this->initializeStorages()) {
+            // could not initialize storages, throw exception
+            throw $throwable;
+        }
 
         $message = $this->primaryStorage->logThrowable($throwable, $additionalData);
 
@@ -106,6 +109,10 @@ final class CompoundStorage implements ThrowableStorageInterface
 
     private function createStorage(string $storageClassName): ThrowableStorageInterface
     {
+        if (!Bootstrap::$staticObjectManager) {
+            throw new \RuntimeException('Bootstrap::$staticObjectManager is not set yet', 1612434395);
+        }
+
         assert(is_a($storageClassName, ThrowableStorageInterface::class, true));
         $bootstrap = Bootstrap::$staticObjectManager->get(Bootstrap::class);
         $configurationManager = $bootstrap->getEarlyInstance(ConfigurationManager::class);
@@ -123,15 +130,21 @@ final class CompoundStorage implements ThrowableStorageInterface
         return $storage;
     }
 
-    private function initializeStorages(): void
+    private function initializeStorages(): bool
     {
         if ($this->initialized) {
-            return;
+            return true;
         }
 
-        ($this->initializeStoragesClosure)();
+        try {
+            ($this->initializeStoragesClosure)();
+        } catch (\Throwable $t) {
+            return false;
+        }
 
         $this->initialized = true;
+
+        return true;
     }
 
 }
