@@ -84,14 +84,19 @@ class CompoundStorageTest extends FunctionalTestCase
             ]
         ]);
 
+        self::expectException(Test::class);
+        self::expectExceptionCode(1);
+
+        $staticObjectManager = Bootstrap::$staticObjectManager;
         Bootstrap::$staticObjectManager = null;
 
         $throwable = new Test('foo', 1);
 
-        self::expectException(Test::class);
-        self::expectExceptionCode(1);
-
-        $storage->logThrowable($throwable);
+        try {
+            $storage->logThrowable($throwable);
+        } finally {
+            Bootstrap::$staticObjectManager = $staticObjectManager;
+        }
     }
 
 }
