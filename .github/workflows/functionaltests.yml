@@ -10,9 +10,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: [ 7.2, 7.3, 7.4 ]
+        php-version: [ 7.2, 7.3, 7.4, 8.0 ]
         flow-version: [ 5.3, 6.3, 7.0 ]
         exclude:
+          # Disable Flow 5.3 and 6.3 on PHP 8.0, as only ^7.2 is supported
+          - php-version: 8.0
+            flow-version: 5.3
+          - php-version: 8.0
+            flow-version: 6.3
+
           # Disable Flow 7.0 on PHP 7.2, as 7.3 is required
           - php-version: 7.2
             flow-version: 7.0
