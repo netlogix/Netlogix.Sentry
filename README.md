@@ -97,6 +97,43 @@ For each scope, you can implement your own providers. Each scope requires it's o
 
 Then simply add them to the configuration.
 
+If you need access to the thrown exception, you can check `Netlogix\Sentry\Scope\ScopeProvider::getCurrentThrowable()`:
+```php
+<?php
+
+namespace Netlogix\Sentry\Scope\Extra;
+
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Exception as FlowException;
+use Netlogix\Sentry\Scope\ScopeProvider;
+
+/**
+ * @Flow\Scope("singleton")
+ */
+final class ReferenceCodeProvider implements ExtraProvider
+{
+
+    private ScopeProvider $scopeProvider;
+
+    public function __construct(ScopeProvider $scopeProvider)
+    {
+        $this->scopeProvider = $scopeProvider;
+    }
+
+    public function getExtra(): array
+    {
+        $throwable = $this->scopeProvider->getCurrentThrowable();
+
+        if (!$throwable instanceof FlowException) {
+            return [];
+        }
+
+        return ['referenceCode' => $throwable->getReferenceCode()];
+    }
+
+}
+```
+
 ## Manually logging exceptions to sentry
 
 If you need to manually send exceptions to sentry (inside a `catch` block for example), you can use the

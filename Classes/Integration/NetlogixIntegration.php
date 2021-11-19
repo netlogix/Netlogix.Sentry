@@ -49,12 +49,12 @@ final class NetlogixIntegration implements IntegrationInterface
             }
         }
 
-        self::configureScopeForEvent($event);
+        self::configureScopeForEvent($event, $hint);
 
         return $event;
     }
 
-    private static function configureScopeForEvent(Event $event): void
+    private static function configureScopeForEvent(Event $event, EventHint $hint): void
     {
         try {
             $scopeProvider = Bootstrap::$staticObjectManager->get(ScopeProvider::class);
@@ -62,12 +62,20 @@ final class NetlogixIntegration implements IntegrationInterface
                 return;
             }
 
-            $event->setEnvironment($scopeProvider->collectEnvironment());
-            $event->setExtra($scopeProvider->collectExtra());
-            $event->setRelease($scopeProvider->collectRelease());
-            $event->setTags($scopeProvider->collectTags());
-            $userData = $scopeProvider->collectUser();
-            $event->setUser($userData !== [] ? UserDataBag::createFromArray($userData) : null);
+            $configureEvent = function() use ($event, $scopeProvider) {
+                $event->setEnvironment($scopeProvider->collectEnvironment());
+                $event->setExtra($scopeProvider->collectExtra());
+                $event->setRelease($scopeProvider->collectRelease());
+                $event->setTags($scopeProvider->collectTags());
+                $userData = $scopeProvider->collectUser();
+                $event->setUser($userData !== [] ? UserDataBag::createFromArray($userData) : null);
+            };
+
+            if ($hint->exception instanceof Throwable) {
+                $scopeProvider->withThrowable($hint->exception, $configureEvent);
+            } else {
+                $configureEvent();
+            }
         } catch (Throwable $t) {
         }
     }
