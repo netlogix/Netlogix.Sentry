@@ -15,16 +15,21 @@ class Package extends \Neos\Flow\Package\Package
     {
         $dispatcher = $bootstrap->getSignalSlotDispatcher();
 
-        $dispatcher->connect(ConfigurationManager::class, 'configurationManagerReady', static function(ConfigurationManager $configurationManager) {
-            $dsn = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Netlogix.Sentry.dsn');
+        $dispatcher->connect(
+            ConfigurationManager::class,
+            'configurationManagerReady',
+            static function (ConfigurationManager $configurationManager) {
+                $dsn = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                    'Netlogix.Sentry.dsn');
 
-            init([
-                'dsn' => $dsn,
-                'integrations' => [
-                    new NetlogixIntegration(),
-                ]
-            ]);
-        });
+                init([
+                    'dsn' => $dsn,
+                    'integrations' => [
+                        new NetlogixIntegration(),
+                    ]
+                ]);
+            }
+        );
     }
 
 }

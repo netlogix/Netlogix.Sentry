@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Netlogix\Sentry\Command;
 
-use Neos\Flow\Cli\CommandController;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Cli\CommandController;
 use Netlogix\Sentry\Exception\Test;
 use Netlogix\Sentry\Scope\ScopeProvider;
 
