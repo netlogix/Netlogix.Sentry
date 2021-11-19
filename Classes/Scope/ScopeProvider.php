@@ -57,7 +57,10 @@ class ScopeProvider
         self::SCOPE_USER => [],
     ];
 
-    protected ?Throwable $currentThrowable = null;
+    /**
+     * @var Throwable|null
+     */
+    protected $currentThrowable = null;
 
     public function __construct(ObjectManagerInterface $objectManager)
     {

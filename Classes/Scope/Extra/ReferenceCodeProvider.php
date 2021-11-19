@@ -13,7 +13,10 @@ use Netlogix\Sentry\Scope\ScopeProvider;
 final class ReferenceCodeProvider implements ExtraProvider
 {
 
-    private ScopeProvider $scopeProvider;
+    /**
+     * @var ScopeProvider
+     */
+    private $scopeProvider;
 
     public function __construct(ScopeProvider $scopeProvider)
     {

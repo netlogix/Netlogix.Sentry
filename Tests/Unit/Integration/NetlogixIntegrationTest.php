@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Netlogix\Sentry\Tests\Functional\Integration;
+namespace Netlogix\Sentry\Tests\Unit\Integration;
 
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
@@ -119,6 +119,15 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->getMock();
 
         $scopeProvider = $this->getMockBuilder(ScopeProvider::class)
+            ->setMethods(
+                [
+                    'collectEnvironment',
+                    'collectExtra',
+                    'collectRelease',
+                    'collectTags',
+                    'collectUser',
+                ]
+            )
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -221,6 +230,38 @@ class NetlogixIntegrationTest extends UnitTestCase
 
         self::assertSame($event, $enrichedEvent);
         self::assertSame('release-123', $event->getRelease());
+    }
+
+    /**
+     * @test
+     */
+    public function ScopeProvider_receives_the_current_Exception(): void
+    {
+        $objectManager = $this->getMockBuilder(ObjectManagerInterface::class)
+            ->getMock();
+
+        $scopeProvider = $this->getMockBuilder(ScopeProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $throwable = new Test('foo', 1612089648);
+
+        $scopeProvider
+            ->expects(self::once())
+            ->method('withThrowable')
+            ->with($throwable);
+
+        $objectManager
+            ->method('get')
+            ->withConsecutive([ExceptionRenderingOptionsResolver::class], [ScopeProvider::class])
+            ->willReturnOnConsecutiveCalls(new ExceptionRenderingOptionsResolver(), $scopeProvider);
+
+        Bootstrap::$staticObjectManager = $objectManager;
+
+        $event = Event::createEvent();
+        $hint = EventHint::fromArray(['exception' => $throwable]);
+
+        NetlogixIntegration::handleEvent($event, $hint);
     }
 
 }

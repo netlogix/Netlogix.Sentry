@@ -12,7 +12,10 @@ use Netlogix\Sentry\Scope\ScopeProvider;
 final class CodeProvider implements TagProvider
 {
 
-    private ScopeProvider $scopeProvider;
+    /**
+     * @var ScopeProvider
+     */
+    private $scopeProvider;
 
     public function __construct(ScopeProvider $scopeProvider)
     {
