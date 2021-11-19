@@ -12,9 +12,12 @@ use Netlogix\Sentry\Scope\Extra\ExtraProvider;
 use Netlogix\Sentry\Scope\Release\ReleaseProvider;
 use Netlogix\Sentry\Scope\Tags\TagProvider;
 use Netlogix\Sentry\Scope\User\UserProvider;
+use Throwable;
 
 /**
  * @Flow\Scope("singleton")
+ *
+ * @api
  */
 class ScopeProvider
 {
@@ -53,6 +56,11 @@ class ScopeProvider
         self::SCOPE_TAGS => [],
         self::SCOPE_USER => [],
     ];
+
+    /**
+     * @var Throwable|null
+     */
+    protected $currentThrowable = null;
 
     public function __construct(ObjectManagerInterface $objectManager)
     {
@@ -127,6 +135,26 @@ class ScopeProvider
         }
 
         return $user;
+    }
+
+    public function withThrowable(Throwable $t, callable $do): void
+    {
+        $this->currentThrowable = $t;
+        try {
+            $do();
+        } finally {
+            $this->currentThrowable = null;
+        }
+    }
+
+    /**
+     * @api
+     *
+     * @return Throwable|null
+     */
+    public function getCurrentThrowable(): ?Throwable
+    {
+        return $this->currentThrowable;
     }
 
     public function injectSettings(array $settings): void

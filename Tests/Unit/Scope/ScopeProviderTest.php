@@ -12,6 +12,7 @@ use Netlogix\Sentry\Scope\Release\ReleaseProvider;
 use Netlogix\Sentry\Scope\ScopeProvider;
 use Netlogix\Sentry\Scope\Tags\TagProvider;
 use Netlogix\Sentry\Scope\User\UserProvider;
+use stdClass;
 
 class ScopeProviderTest extends UnitTestCase
 {
@@ -138,31 +139,31 @@ class ScopeProviderTest extends UnitTestCase
 
     public function provideInvalidProviderTypes(): iterable
     {
-        yield 'environment stdClass' => ['scope' => 'environment', 'provider' => new \stdClass()];
+        yield 'environment stdClass' => ['scope' => 'environment', 'provider' => new stdClass()];
         yield 'environment Extra' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
         yield 'environment Release' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
         yield 'environment Tag' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(TagProvider::class)->getMock()];
         yield 'environment User' => ['scope' => 'environment', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
 
-        yield 'extra stdClass' => ['scope' => 'extra', 'provider' => new \stdClass()];
+        yield 'extra stdClass' => ['scope' => 'extra', 'provider' => new stdClass()];
         yield 'extra Environment' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'extra Release' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
         yield 'extra Tag' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(TagProvider::class)->getMock()];
         yield 'extra User' => ['scope' => 'extra', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
 
-        yield 'release stdClass' => ['scope' => 'release', 'provider' => new \stdClass()];
+        yield 'release stdClass' => ['scope' => 'release', 'provider' => new stdClass()];
         yield 'release Environment' => ['scope' => 'release', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'release Extra' => ['scope' => 'release', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
         yield 'release Tag' => ['scope' => 'release', 'provider' => $this->getMockBuilder(TagProvider::class)->getMock()];
         yield 'release User' => ['scope' => 'release', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
 
-        yield 'tags stdClass' => ['scope' => 'tags', 'provider' => new \stdClass()];
+        yield 'tags stdClass' => ['scope' => 'tags', 'provider' => new stdClass()];
         yield 'tags Environment' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'tags Extra' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
         yield 'tags Release' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
         yield 'tags User' => ['scope' => 'tags', 'provider' => $this->getMockBuilder(UserProvider::class)->getMock()];
 
-        yield 'user stdClass' => ['scope' => 'user', 'provider' => new \stdClass()];
+        yield 'user stdClass' => ['scope' => 'user', 'provider' => new stdClass()];
         yield 'user Environment' => ['scope' => 'user', 'provider' => $this->getMockBuilder(EnvironmentProvider::class)->getMock()];
         yield 'user Extra' => ['scope' => 'user', 'provider' => $this->getMockBuilder(ExtraProvider::class)->getMock()];
         yield 'user Release' => ['scope' => 'user', 'provider' => $this->getMockBuilder(ReleaseProvider::class)->getMock()];
@@ -372,6 +373,50 @@ class ScopeProviderTest extends UnitTestCase
             ['foo' => ['bar', 'baz']],
             $this->provider->collectUser()
         );
+    }
+
+    /**
+     * @test
+     */
+    public function withThrowable_triggers_the_callback(): void
+    {
+        $throwable = new \Exception('foo', 123);
+
+
+        $makeSureCallbackWasCalled = self::getMockBuilder(stdClass::class)
+            ->setMethods(['foo'])
+            ->getMock();
+
+        $makeSureCallbackWasCalled
+            ->expects(self::once())
+            ->method('foo');
+
+        $this->provider->withThrowable($throwable, [$makeSureCallbackWasCalled, 'foo']);
+    }
+
+    /**
+     * @test
+     */
+    public function While_the_callable_runs_the_current_throwable_is_set(): void
+    {
+        $throwable = new \Exception('foo', 123);
+
+        self::assertNull($this->provider->getCurrentThrowable());
+
+        $makeSureCallbackWasCalled = self::getMockBuilder(stdClass::class)
+            ->setMethods(['foo'])
+            ->getMock();
+
+        $makeSureCallbackWasCalled
+            ->expects(self::once())
+            ->method('foo');
+
+        $this->provider->withThrowable($throwable, function() use ($throwable, $makeSureCallbackWasCalled) {
+            self::assertSame($throwable, $this->provider->getCurrentThrowable());
+            [$makeSureCallbackWasCalled, 'foo']();
+        });
+
+        self::assertNull($this->provider->getCurrentThrowable());
     }
 
 }

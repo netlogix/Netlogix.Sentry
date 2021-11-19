@@ -24,7 +24,7 @@ Netlogix:
 ```
 
 Then simply run `./flow sentry:test` to log an exception to sentry.
-While this is technically all you **have to** do, you might want to adjust the providers - see below. 
+While this is technically all you **have to** do, you might want to adjust the providers - see below.
 
 ## Configuration
 
@@ -46,7 +46,7 @@ Netlogix:
         'Netlogix\Sentry\Scope\Release\PathPattern': true
 
       tags:
-        # Numerical order can be used 
+        # Numerical order can be used
         'Netlogix\Sentry\Scope\Tags\FlowEnvironment': '10'
         'Your\Custom\TagProvider': '20'
 
@@ -85,6 +85,9 @@ Netlogix:
       pathPattern: '~/releases/(\d{14})$~'
 ````
 
+You can also use the `Netlogix\Sentry\Scope\Release\FlowSettings` to set the Release
+through Flow Configuration (`Netlogix.Sentry.release.setting`, set to `%env:SENTRY_RELEASE%` by default).
+
 ## Custom Providers
 
 For each scope, you can implement your own providers. Each scope requires it's own interface:
@@ -96,6 +99,43 @@ For each scope, you can implement your own providers. Each scope requires it's o
 * Scope `user` => `Netlogix\Sentry\Scope\User\UserProvider`
 
 Then simply add them to the configuration.
+
+If you need access to the thrown exception, you can check `Netlogix\Sentry\Scope\ScopeProvider::getCurrentThrowable()`:
+```php
+<?php
+
+namespace Netlogix\Sentry\Scope\Extra;
+
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Exception as FlowException;
+use Netlogix\Sentry\Scope\ScopeProvider;
+
+/**
+ * @Flow\Scope("singleton")
+ */
+final class ReferenceCodeProvider implements ExtraProvider
+{
+
+    private ScopeProvider $scopeProvider;
+
+    public function __construct(ScopeProvider $scopeProvider)
+    {
+        $this->scopeProvider = $scopeProvider;
+    }
+
+    public function getExtra(): array
+    {
+        $throwable = $this->scopeProvider->getCurrentThrowable();
+
+        if (!$throwable instanceof FlowException) {
+            return [];
+        }
+
+        return ['referenceCode' => $throwable->getReferenceCode()];
+    }
+
+}
+```
 
 ## Manually logging exceptions to sentry
 
@@ -115,7 +155,7 @@ class LoggingManually {
      * @var SentryStorage
      */
     protected $sentryStorage;
-    
+
     public function log(): void {
         $exception = new \RuntimeException('foo', 1612114936);
 
@@ -128,7 +168,7 @@ class LoggingManually {
 ## Ignoring exceptions
 
 If you need to skip sending a specific exception to sentry, you can use Flow's `renderingGroups`. Simply create one
-that matches your exception and set `logException` to `false`: 
+that matches your exception and set `logException` to `false`:
 
 ```yaml
 Neos:

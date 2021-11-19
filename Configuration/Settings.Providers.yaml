@@ -6,14 +6,20 @@ Netlogix:
         # Only one environment provider should be active!
         'Netlogix\Sentry\Scope\Environment\FlowSettings': true
 
-      extra: []
+      extra:
+        'Netlogix\Sentry\Scope\Extra\ReferenceCodeProvider': true
 
       release:
         # See Configuration/Settings.Release.yaml for settings
         # Only one release provider should be active!
         'Netlogix\Sentry\Scope\Release\PathPattern': true
 
+        # Use FlowSettings to set Release through Configuration.
+        # The default value is %env:SENTRY_RELEASE%
+        # Netlogix\Sentry\Scope\Release\FlowSettings: true
+
       tags:
+        'Netlogix\Sentry\Scope\Tags\CodeProvider': true
         'Netlogix\Sentry\Scope\Tags\FlowEnvironment': true
 
       user:

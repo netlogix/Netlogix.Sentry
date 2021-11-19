@@ -1,8 +1,11 @@
 Netlogix:
   Sentry:
 
-    # Used by Netlogix\Sentry\Scope\Release\PathPattern
     release:
+      # Used by Netlogix\Sentry\Scope\Release\FlowSettings
+      setting: '%env:SENTRY_RELEASE%'
+
+      # Used by Netlogix\Sentry\Scope\Release\PathPattern
       # Path to use for extraction of release
       pathToMatch: '%FLOW_PATH_ROOT%'
 
