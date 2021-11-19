@@ -24,7 +24,7 @@ Netlogix:
 ```
 
 Then simply run `./flow sentry:test` to log an exception to sentry.
-While this is technically all you **have to** do, you might want to adjust the providers - see below. 
+While this is technically all you **have to** do, you might want to adjust the providers - see below.
 
 ## Configuration
 
@@ -46,7 +46,7 @@ Netlogix:
         'Netlogix\Sentry\Scope\Release\PathPattern': true
 
       tags:
-        # Numerical order can be used 
+        # Numerical order can be used
         'Netlogix\Sentry\Scope\Tags\FlowEnvironment': '10'
         'Your\Custom\TagProvider': '20'
 
@@ -84,6 +84,9 @@ Netlogix:
       # This pattern is matched against pathToMatch
       pathPattern: '~/releases/(\d{14})$~'
 ````
+
+You can also use the `Netlogix\Sentry\Scope\Release\FlowSettings` to set the Release
+through Flow Configuration (`Netlogix.Sentry.release.setting`, set to `%env:SENTRY_RELEASE%` by default).
 
 ## Custom Providers
 
@@ -152,7 +155,7 @@ class LoggingManually {
      * @var SentryStorage
      */
     protected $sentryStorage;
-    
+
     public function log(): void {
         $exception = new \RuntimeException('foo', 1612114936);
 
@@ -165,7 +168,7 @@ class LoggingManually {
 ## Ignoring exceptions
 
 If you need to skip sending a specific exception to sentry, you can use Flow's `renderingGroups`. Simply create one
-that matches your exception and set `logException` to `false`: 
+that matches your exception and set `logException` to `false`:
 
 ```yaml
 Neos:
