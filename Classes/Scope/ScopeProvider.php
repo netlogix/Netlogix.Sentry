@@ -148,9 +148,8 @@ class ScopeProvider
     }
 
     /**
-     * @api
-     *
      * @return Throwable|null
+     * @api
      */
     public function getCurrentThrowable(): ?Throwable
     {

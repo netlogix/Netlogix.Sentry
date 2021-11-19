@@ -3,8 +3,9 @@ declare(strict_types=1);
 
 namespace Netlogix\Sentry\ExceptionHandler;
 
-use Neos\Flow\Error\AbstractExceptionHandler;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Error\AbstractExceptionHandler;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -38,14 +39,14 @@ final class ExceptionRenderingOptionsResolver extends AbstractExceptionHandler
         self::throwWhenUsed();
     }
 
-    protected function echoExceptionCli(\Throwable $exception)
+    protected function echoExceptionCli(Throwable $exception)
     {
         self::throwWhenUsed();
     }
 
     private static function throwWhenUsed(): void
     {
-        throw new \RuntimeException('This Exception Handler should not be used!', 1612044864);
+        throw new RuntimeException('This Exception Handler should not be used!', 1612044864);
     }
 
 }

@@ -29,10 +29,10 @@ class CompoundStorageTest extends FunctionalTestCase
         $wasCalled1 = false;
         $wasCalled2 = false;
 
-        TestThrowableStorage1::$logThrowableClosure = static function() use (&$wasCalled1) {
+        TestThrowableStorage1::$logThrowableClosure = static function () use (&$wasCalled1) {
             $wasCalled1 = true;
         };
-        TestThrowableStorage2::$logThrowableClosure = static function() use (&$wasCalled2) {
+        TestThrowableStorage2::$logThrowableClosure = static function () use (&$wasCalled2) {
             $wasCalled2 = true;
         };
 
@@ -56,9 +56,9 @@ class CompoundStorageTest extends FunctionalTestCase
 
         $throwable = new Test('foo', 1);
 
-        $requestInformationRenderer = static function() {
+        $requestInformationRenderer = static function () {
         };
-        $backtraceRenderer = static function() {
+        $backtraceRenderer = static function () {
         };
         $storage->setRequestInformationRenderer($requestInformationRenderer);
         $storage->setBacktraceRenderer($backtraceRenderer);

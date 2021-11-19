@@ -3,8 +3,9 @@ declare(strict_types=1);
 
 namespace Netlogix\Sentry\ThrowableStorage;
 
-use Neos\Flow\Log\ThrowableStorageInterface;
+use Closure;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Log\ThrowableStorageInterface;
 use Sentry\State\Scope;
 use Throwable;
 use function Sentry\captureException;
@@ -24,7 +25,7 @@ final class SentryStorage implements ThrowableStorageInterface
 
     public function logThrowable(Throwable $throwable, array $additionalData = [])
     {
-        withScope(function(Scope $scope) use (&$eventId, $throwable, $additionalData) {
+        withScope(function (Scope $scope) use (&$eventId, $throwable, $additionalData) {
             $scope->setExtras($additionalData);
             $eventId = captureException($throwable);
         });
@@ -36,11 +37,11 @@ final class SentryStorage implements ThrowableStorageInterface
         return '';
     }
 
-    public function setRequestInformationRenderer(\Closure $requestInformationRenderer)
+    public function setRequestInformationRenderer(Closure $requestInformationRenderer)
     {
     }
 
-    public function setBacktraceRenderer(\Closure $backtraceRenderer)
+    public function setBacktraceRenderer(Closure $backtraceRenderer)
     {
     }
 
