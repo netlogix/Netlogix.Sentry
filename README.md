@@ -189,6 +189,9 @@ Neos:
           ignoredExceptions:
             matchingStatusCodes: [ 418 ]
             matchingExceptionClassNames: [ 'Your\Ignored\Exception' ]
+            # It is also possible to match against \Throwable::getCode(). Please note that this is not a Flow feature.
+            # Check \Netlogix\Sentry\ExceptionHandler\ExceptionRenderingOptionsResolver::resolveRenderingGroup() for more info
+            # matchingExceptionCodes: [1638880375]
             options:
               logException: false
 ```
