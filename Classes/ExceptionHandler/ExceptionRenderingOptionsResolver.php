@@ -15,6 +15,12 @@ use Throwable;
 final class ExceptionRenderingOptionsResolver extends AbstractExceptionHandler
 {
 
+    /**
+     * @var array
+     * @Flow\InjectConfiguration(package="Neos.Flow", path="error.exceptionHandler")
+     */
+    protected $options;
+
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct()
     {
@@ -23,6 +29,28 @@ final class ExceptionRenderingOptionsResolver extends AbstractExceptionHandler
     public function resolveRenderingOptionsForThrowable(Throwable $throwable): array
     {
         return $this->resolveCustomRenderingOptions($throwable);
+    }
+
+    protected function resolveRenderingGroup(\Throwable $exception)
+    {
+        if (!isset($this->options['renderingGroups'])) {
+            return null;
+        }
+        $renderingGroup = parent::resolveRenderingGroup($exception);
+        if ($renderingGroup === null) {
+            // try to match using exception code
+            foreach ($this->options['renderingGroups'] as $renderingGroupName => $renderingGroupSettings) {
+                if (isset($renderingGroupSettings['matchingExceptionCodes'])) {
+                    foreach ($renderingGroupSettings['matchingExceptionCodes'] as $exceptionCode) {
+                        if ($exception->getCode() === $exceptionCode) {
+                            return $renderingGroupName;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $renderingGroup;
     }
 
     /**
