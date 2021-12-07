@@ -15,6 +15,12 @@ use Throwable;
 final class ExceptionRenderingOptionsResolver extends AbstractExceptionHandler
 {
 
+    /**
+     * @var array
+     * @Flow\InjectConfiguration(package="Neos.Flow", path="error.exceptionHandler")
+     */
+    protected $options;
+
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct()
     {
