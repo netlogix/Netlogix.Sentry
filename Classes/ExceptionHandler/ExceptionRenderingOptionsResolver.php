@@ -27,6 +27,9 @@ final class ExceptionRenderingOptionsResolver extends AbstractExceptionHandler
 
     protected function resolveRenderingGroup(\Throwable $exception)
     {
+        if (!isset($this->options['renderingGroups'])) {
+            return null;
+        }
         $renderingGroup = parent::resolveRenderingGroup($exception);
         if ($renderingGroup === null) {
             // try to match using exception code
