@@ -67,7 +67,7 @@ final class ExceptionRenderingOptionsResolver extends AbstractExceptionHandler
         self::throwWhenUsed();
     }
 
-    protected function echoExceptionCli(Throwable $exception)
+    protected function echoExceptionCli(Throwable $exception, bool $exceptionWasLogged)
     {
         self::throwWhenUsed();
     }
