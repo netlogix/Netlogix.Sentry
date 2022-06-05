@@ -12,8 +12,6 @@ fit your needs.
 
 Currently the following Flow versions are supported:
 
-* `^5.3`
-* `^6.3`
 * `^7.3`
 * `^8.0`
 
