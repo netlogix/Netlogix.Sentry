@@ -1,0 +1,5 @@
+Netlogix:
+  Sentry:
+    inAppExclude:
+      - 'Packages/Framework/'
+      - 'Packages/Libraries/'
