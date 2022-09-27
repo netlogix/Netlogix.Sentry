@@ -124,7 +124,7 @@ final class NetlogixIntegration implements IntegrationInterface
         return $className ? str_replace('_Original', '', $className) : null;
     }
 
-    private static function isInApp(string $path)
+    private static function isInApp(string $path): bool
     {
         foreach (self::$inAppExclude as $excludePath) {
             if (strpos($path, $excludePath) !== false) {
