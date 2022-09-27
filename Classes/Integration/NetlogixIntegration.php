@@ -6,12 +6,15 @@ namespace Netlogix\Sentry\Integration;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\ObjectManagement\CompileTimeObjectManager;
+use Neos\Utility\Files;
 use Netlogix\Sentry\ExceptionHandler\ExceptionRenderingOptionsResolver;
 use Netlogix\Sentry\Scope\ScopeProvider;
 use Sentry\Event;
 use Sentry\EventHint;
+use Sentry\Frame;
 use Sentry\Integration\IntegrationInterface;
 use Sentry\SentrySdk;
+use Sentry\Stacktrace;
 use Sentry\State\Scope;
 use Sentry\UserDataBag;
 use Throwable;
@@ -22,6 +25,16 @@ use Throwable;
  */
 final class NetlogixIntegration implements IntegrationInterface
 {
+
+    /**
+     * @var array
+     */
+    protected static $inAppExclude;
+
+    public function __construct(array $inAppExclude)
+    {
+        self::$inAppExclude = $inAppExclude;
+    }
 
     public function setupOnce(): void
     {
@@ -49,9 +62,76 @@ final class NetlogixIntegration implements IntegrationInterface
             }
         }
 
+        $rewrittenExceptions = array_map(
+            function ($exception) {
+                $stacktrace = $exception->getStacktrace();
+                $exception->setStacktrace(self::rewriteStacktraceAndFlagInApp($stacktrace));
+                return $exception;
+            },
+            $event->getExceptions()
+        );
+
+        $event->setExceptions($rewrittenExceptions);
+
         self::configureScopeForEvent($event, $hint);
 
         return $event;
+    }
+
+    private static function rewriteStacktraceAndFlagInApp(Stacktrace $stacktrace): Stacktrace
+    {
+        $frames = array_map(function ($frame) {
+            $classPathAndFilename = self::getOriginalClassPathAndFilename($frame->getFile());
+            return new Frame(
+                self::replaceProxyClassName($frame->getFunctionName()),
+                $classPathAndFilename,
+                $frame->getLine(),
+                self::replaceProxyClassName($frame->getRawFunctionName()),
+                $frame->getAbsoluteFilePath()
+                    ? Files::concatenatePaths([FLOW_PATH_ROOT, trim($classPathAndFilename, '/')])
+                    : null,
+                $frame->getVars(),
+                self::isInApp($classPathAndFilename)
+            );
+        }, $stacktrace->getFrames());
+
+        return new Stacktrace($frames);
+    }
+
+    private static function getOriginalClassPathAndFilename(string $proxyClassPathAndFilename): string
+    {
+        if (!preg_match('#Flow_Object_Classes/[A-Za-z0-9_]+.php$#', $proxyClassPathAndFilename)) {
+            return $proxyClassPathAndFilename;
+        }
+
+        $absolutePathAndFilename = Files::concatenatePaths([FLOW_PATH_ROOT, trim($proxyClassPathAndFilename, '/')]);
+        if (
+            !file_exists($absolutePathAndFilename) ||
+            !($proxyClassFile = file_get_contents($absolutePathAndFilename))
+        ) {
+            return $proxyClassPathAndFilename;
+        }
+
+        if (!preg_match('@# PathAndFilename: ([/A-Za-z0-9_.]+\.php)@', $proxyClassFile, $matches)) {
+            return $proxyClassPathAndFilename;
+        }
+
+        return str_replace(FLOW_PATH_ROOT, '/', str_replace('_', '/', $matches[1]));
+    }
+
+    private static function replaceProxyClassName(?string $className): ?string
+    {
+        return $className ? str_replace('_Original', '', $className) : null;
+    }
+
+    private static function isInApp(string $path): bool
+    {
+        foreach (self::$inAppExclude as $excludePath) {
+            if (strpos($path, $excludePath) !== false) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static function configureScopeForEvent(Event $event, EventHint $hint): void

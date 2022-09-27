@@ -19,13 +19,20 @@ class Package extends \Neos\Flow\Package\Package
             ConfigurationManager::class,
             'configurationManagerReady',
             static function (ConfigurationManager $configurationManager) {
-                $dsn = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
-                    'Netlogix.Sentry.dsn');
+                $dsn = $configurationManager->getConfiguration(
+                    ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                    'Netlogix.Sentry.dsn'
+                );
 
+                $inAppExclude = $configurationManager->getConfiguration(
+                    ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                    'Netlogix.Sentry.inAppExclude'
+                );
+                
                 init([
                     'dsn' => $dsn,
                     'integrations' => [
-                        new NetlogixIntegration(),
+                        new NetlogixIntegration($inAppExclude ?? []),
                     ]
                 ]);
             }

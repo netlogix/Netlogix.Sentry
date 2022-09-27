@@ -31,7 +31,7 @@ jobs:
           extensions: mbstring, xml, json, zlib, iconv, intl, pdo_sqlite
           ini-values: opcache.fast_shutdown=0
 
-      - name: "[1/4] Create composer project - Cache composer dependencies"
+      - name: "[1/5] Create composer project - Cache composer dependencies"
         uses: actions/cache@v1
         with:
           path: ~/.composer/cache
@@ -40,14 +40,18 @@ jobs:
             php-${{ matrix.php-version }}-flow-${{ matrix.flow-version }}-composer-
             php-${{ matrix.php-version }}-flow-
 
-      - name: "[2/4] Create composer project - No install"
+      - name: "[2/5] Create composer project - No install"
         run: composer create-project neos/flow-base-distribution ${{ env.FLOW_DIST_FOLDER }} --prefer-dist --no-progress --no-install "^${{ matrix.flow-version }}"
 
-      - name: "[3/4] Create composer project  - Require behat in compatible version"
+      - name: "[3/5] Allow neos composer plugin"
+        run: composer config --no-plugins allow-plugins.neos/composer-plugin true
+        working-directory: ${{ env.FLOW_DIST_FOLDER }}
+
+      - name: "[4/5] Create composer project  - Require behat in compatible version"
         run: composer require --dev --no-update "neos/behat:@dev"
         working-directory: ${{ env.FLOW_DIST_FOLDER }}
 
-      - name: "[4/4] Create composer project - Install project"
+      - name: "[5/5] Create composer project - Install project"
         run: composer install
         working-directory: ${{ env.FLOW_DIST_FOLDER }}
 
