@@ -26,7 +26,10 @@ use Throwable;
 final class NetlogixIntegration implements IntegrationInterface
 {
 
-    protected static array $inAppExclude;
+    /**
+     * @var array
+     */
+    protected static $inAppExclude;
 
     public function __construct(array $inAppExclude)
     {
