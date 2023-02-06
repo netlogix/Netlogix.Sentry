@@ -4,10 +4,11 @@ declare(strict_types=1);
 namespace Netlogix\Sentry\Integration;
 
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\ObjectManagement\CompileTimeObjectManager;
 use Neos\Utility\Files;
-use Netlogix\Sentry\ExceptionHandler\ExceptionRenderingOptionsResolver;
+use Neos\Utility\PositionalArraySorter;
 use Netlogix\Sentry\Scope\ScopeProvider;
 use Sentry\Event;
 use Sentry\EventHint;
@@ -54,10 +55,27 @@ final class NetlogixIntegration implements IntegrationInterface
             return $event;
         }
 
-        if ($hint->exception instanceof Throwable
-            && ($optionsResolver = Bootstrap::$staticObjectManager->get(ExceptionRenderingOptionsResolver::class)) !== null) {
-            $options = $optionsResolver->resolveRenderingOptionsForThrowable($hint->exception);
-            if (!($options['logException'] ?? true)) {
+        if (
+            $hint->exception instanceof Throwable &&
+            ($configurationManager = Bootstrap::$staticObjectManager->get(ConfigurationManager::class)) !== null
+        ) {
+            $rules = $configurationManager->getConfiguration(
+                ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules'
+            ) ?? [];
+
+            $decision = true;
+
+            $positionalArraySorter = new PositionalArraySorter($rules);
+            $sortedRules = $positionalArraySorter->toArray();
+
+            foreach (array_keys($sortedRules) as $rule) {
+                $decision = Bootstrap::$staticObjectManager
+                    ->get($rule)
+                    ->decide($hint->exception, $decision);
+            }
+
+            if (!$decision) {
                 return null;
             }
         }

@@ -1,0 +1,13 @@
+Netlogix:
+  Sentry:
+    loggingRules:
+      rules:
+        'Netlogix\Sentry\LoggingRule\ExceptionHandlerRenderingGroupsRule': '10'
+        'Netlogix\Sentry\LoggingRule\AllowListRule': '20'
+        'Netlogix\Sentry\LoggingRule\DenyListRule': '30'
+
+      allowList: []
+
+      denyList:
+        - 'Neos\Flow\Security\Exception\InvalidHashException'
+        - 'Neos\Flow\Security\Exception\InvalidArgumentForHashGenerationException'
