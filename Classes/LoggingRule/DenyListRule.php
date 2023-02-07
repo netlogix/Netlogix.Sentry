@@ -12,7 +12,7 @@ class DenyListRule implements LoggingRule
      * @Flow\InjectConfiguration(path="loggingRules.denyList")
      * @var array
      */
-    protected array $denyList = [];
+    protected $denyList = [];
 
     public function decide(Throwable $throwable, bool $previousDecision): bool
     {

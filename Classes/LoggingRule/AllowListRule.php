@@ -12,7 +12,7 @@ class AllowListRule implements LoggingRule
      * @Flow\InjectConfiguration(path="loggingRules.allowList")
      * @var array
      */
-    protected array $allowList = [];
+    protected $allowList = [];
 
     public function decide(Throwable $throwable, bool $previousDecision): bool
     {
