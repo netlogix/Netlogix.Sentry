@@ -3,12 +3,14 @@ declare(strict_types=1);
 
 namespace Netlogix\Sentry\Tests\Unit\Integration;
 
+use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
 use Neos\Flow\Tests\UnitTestCase;
 use Netlogix\Sentry\Exception\Test;
 use Netlogix\Sentry\ExceptionHandler\ExceptionRenderingOptionsResolver;
 use Netlogix\Sentry\Integration\NetlogixIntegration;
+use Netlogix\Sentry\LoggingRule\ExceptionHandlerRenderingGroupsRule;
 use Netlogix\Sentry\Scope\ScopeProvider;
 use Sentry\Event;
 use Sentry\EventHint;
@@ -52,27 +54,39 @@ class NetlogixIntegrationTest extends UnitTestCase
 
     /**
      * @test
-     * @dataProvider provideLogExceptionExpectations
+     * @dataProvider provideExceptionLoggingExpectations
      */
-    public function Event_is_logged_depending_on_logException(array $options, bool $isLogged): void
+    public function Event_is_logged_depending_on_loggingRules(bool $ruleResult, bool $isLogged): void
     {
         $objectManager = $this->getMockBuilder(ObjectManagerInterface::class)
             ->getMock();
 
-        $optionsResolver = new ExceptionRenderingOptionsResolver();
-        $optionsResolver->setOptions([
-            'renderingGroups' => [
-                'netlogixSentryTest' => [
-                    'matchingExceptionClassNames' => [Test::class],
-                    'options' => $options
-                ]
-            ]
-        ]);
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([
+                'Netlogix\Sentry\LoggingRule\ExceptionHandlerRenderingGroupsRule' => '10'
+            ]);
+
+        $exceptionHandlerRenderingGroupsRule = $this->getMockBuilder(ExceptionHandlerRenderingGroupsRule::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $exceptionHandlerRenderingGroupsRule
+            ->method('decide')
+            ->willReturn($ruleResult);
 
         $objectManager
             ->method('get')
-            ->with(ExceptionRenderingOptionsResolver::class)
-            ->willReturn($optionsResolver);
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ExceptionHandlerRenderingGroupsRule::class, $exceptionHandlerRenderingGroupsRule]
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
@@ -88,24 +102,48 @@ class NetlogixIntegrationTest extends UnitTestCase
         }
     }
 
-    public function provideLogExceptionExpectations(): iterable
+    /**
+     * @test
+     */
+    public function Event_is_logged_when_no_rules_are_defined(): void
     {
-        yield 'If logException is false, null is returned' => [
-            'options' => [
-                'logException' => false,
-            ],
+        $objectManager = $this->getMockBuilder(ObjectManagerInterface::class)
+            ->getMock();
+
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([]);
+
+        $objectManager
+            ->method('get')
+            ->with(ConfigurationManager::class)
+            ->willReturn($configurationManager);
+
+        Bootstrap::$staticObjectManager = $objectManager;
+
+        $throwable = new Test('foo', 1612089648);
+
+        $event = Event::createEvent();
+        $hint = EventHint::fromArray(['exception' => $throwable]);
+
+        self::assertSame($event, NetlogixIntegration::handleEvent($event, $hint));
+    }
+
+    public function provideExceptionLoggingExpectations(): iterable
+    {
+        yield 'If ruleResult is false, null is returned' => [
+            'ruleResult' => false,
             'isLogged' => false,
         ];
 
-        yield 'If logException is true, the exception is logged' => [
-            'options' => [
-                'logException' => true,
-            ],
-            'isLogged' => true,
-        ];
-
-        yield 'If logException is unset, the exception is logged' => [
-            'options' => [],
+        yield 'If ruleResult is true, the exception is logged' => [
+            'ruleResult' => true,
             'isLogged' => true,
         ];
     }
@@ -156,10 +194,23 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->method('collectUser')
             ->willReturn(['username' => 'lars']);
 
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([]);
+
         $objectManager
             ->method('get')
-            ->withConsecutive([ExceptionRenderingOptionsResolver::class], [ScopeProvider::class])
-            ->willReturnOnConsecutiveCalls(new ExceptionRenderingOptionsResolver(), $scopeProvider);
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ExceptionHandlerRenderingGroupsRule::class, new ExceptionRenderingOptionsResolver()],
+                [ScopeProvider::class, $scopeProvider],
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
@@ -216,10 +267,22 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->method('collectUser')
             ->willReturn([]);
 
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([]);
+
         $objectManager
             ->method('get')
-            ->with(ScopeProvider::class)
-            ->willReturn($scopeProvider);
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ScopeProvider::class, $scopeProvider],
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
@@ -251,10 +314,23 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->method('withThrowable')
             ->with($throwable);
 
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([]);
+
         $objectManager
             ->method('get')
-            ->withConsecutive([ExceptionRenderingOptionsResolver::class], [ScopeProvider::class])
-            ->willReturnOnConsecutiveCalls(new ExceptionRenderingOptionsResolver(), $scopeProvider);
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ExceptionRenderingOptionsResolver::class, new ExceptionRenderingOptionsResolver()],
+                [ScopeProvider::class, $scopeProvider],
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
