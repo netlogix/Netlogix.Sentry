@@ -83,20 +83,10 @@ class NetlogixIntegrationTest extends UnitTestCase
 
         $objectManager
             ->method('get')
-            ->with($this->logicalOr(
-                $this->equalTo( ConfigurationManager::class),
-                $this->equalTo(ExceptionHandlerRenderingGroupsRule::class)
-            ))
-            ->will($this->returnCallback(function($class) use ($configurationManager, $exceptionHandlerRenderingGroupsRule) {
-                if ($class === ConfigurationManager::class) {
-                    return $configurationManager;
-                } else if ($class === ExceptionHandlerRenderingGroupsRule::class) {
-                    return $exceptionHandlerRenderingGroupsRule;
-                }
-
-                return null;
-            }));
-
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ExceptionHandlerRenderingGroupsRule::class, $exceptionHandlerRenderingGroupsRule]
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
@@ -204,10 +194,23 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->method('collectUser')
             ->willReturn(['username' => 'lars']);
 
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([]);
+
         $objectManager
             ->method('get')
-            ->withConsecutive([ExceptionRenderingOptionsResolver::class], [ScopeProvider::class])
-            ->willReturnOnConsecutiveCalls(new ExceptionRenderingOptionsResolver(), $scopeProvider);
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ExceptionHandlerRenderingGroupsRule::class, new ExceptionRenderingOptionsResolver()],
+                [ScopeProvider::class, $scopeProvider],
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
@@ -264,10 +267,22 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->method('collectUser')
             ->willReturn([]);
 
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([]);
+
         $objectManager
             ->method('get')
-            ->with(ScopeProvider::class)
-            ->willReturn($scopeProvider);
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ScopeProvider::class, $scopeProvider],
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
@@ -299,10 +314,23 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->method('withThrowable')
             ->with($throwable);
 
+        $configurationManager = $this->getMockBuilder(ConfigurationManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $configurationManager
+            ->method('getConfiguration')
+            ->with(  ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+                'Netlogix.Sentry.loggingRules.rules')
+            ->willReturn([]);
+
         $objectManager
             ->method('get')
-            ->withConsecutive([ExceptionRenderingOptionsResolver::class], [ScopeProvider::class])
-            ->willReturnOnConsecutiveCalls(new ExceptionRenderingOptionsResolver(), $scopeProvider);
+            ->will($this->returnValueMap([
+                [ConfigurationManager::class, $configurationManager],
+                [ExceptionRenderingOptionsResolver::class, new ExceptionRenderingOptionsResolver()],
+                [ScopeProvider::class, $scopeProvider],
+            ]));
 
         Bootstrap::$staticObjectManager = $objectManager;
 
