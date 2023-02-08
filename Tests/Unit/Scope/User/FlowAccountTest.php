@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Netlogix\Sentry\Tests\Functional\Scope\User;
+namespace Netlogix\Sentry\Tests\Unit\Scope\User;
 
 use Neos\Flow\Security\Account;
 use Neos\Flow\Security\Context;

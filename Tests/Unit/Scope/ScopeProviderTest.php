@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Netlogix\Sentry\Tests\Functional\Scope;
+namespace Netlogix\Sentry\Tests\Unit\Scope;
 
 use Exception;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;

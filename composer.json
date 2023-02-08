@@ -17,5 +17,13 @@
         "neos": {
             "package-key": "Netlogix.Sentry"
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "neos/composer-plugin": true
+        }
+    },
+    "require-dev": {
+        "neos/behat": "@dev"
     }
 }
