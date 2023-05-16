@@ -1,0 +1,3 @@
+Netlogix:
+  Sentry:
+    dsn: '%env:SENTRY_DSN%'
