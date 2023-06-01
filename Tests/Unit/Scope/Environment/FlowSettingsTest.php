@@ -51,7 +51,7 @@ class FlowSettingsTest extends UnitTestCase
         self::assertNull($flowSettings->getEnvironment());
     }
 
-    public function provideEmptyEnvironments(): iterable
+    public static function provideEmptyEnvironments(): iterable
     {
         yield 'Empty String' => ['environment' => ''];
         yield 'NULL' => ['environment' => null];

@@ -12,6 +12,7 @@ use Netlogix\Sentry\ExceptionHandler\ExceptionRenderingOptionsResolver;
 use Netlogix\Sentry\Integration\NetlogixIntegration;
 use Netlogix\Sentry\LoggingRule\ExceptionHandlerRenderingGroupsRule;
 use Netlogix\Sentry\Scope\ScopeProvider;
+use PHPUnit\Framework\MockObject\MockBuilder;
 use Sentry\Event;
 use Sentry\EventHint;
 use Sentry\UserDataBag;
@@ -135,7 +136,7 @@ class NetlogixIntegrationTest extends UnitTestCase
         self::assertSame($event, NetlogixIntegration::handleEvent($event, $hint));
     }
 
-    public function provideExceptionLoggingExpectations(): iterable
+    public static function provideExceptionLoggingExpectations(): iterable
     {
         yield 'If ruleResult is false, null is returned' => [
             'ruleResult' => false,
@@ -157,7 +158,7 @@ class NetlogixIntegrationTest extends UnitTestCase
             ->getMock();
 
         $scopeProvider = $this->getMockBuilder(ScopeProvider::class)
-            ->setMethods(
+            ->{method_exists(MockBuilder::class, 'onlyMethods') ? 'onlyMethods' : 'setMethods'}(
                 [
                     'collectEnvironment',
                     'collectExtra',
