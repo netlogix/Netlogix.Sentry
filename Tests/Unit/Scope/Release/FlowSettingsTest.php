@@ -51,7 +51,7 @@ class FlowSettingsTest extends UnitTestCase
         self::assertNull($flowSettings->getRelease());
     }
 
-    public function provideEmptyReleases(): iterable
+    public static function provideEmptyReleases(): iterable
     {
         yield 'Empty String' => ['release' => ''];
         yield 'NULL' => ['release' => null];
