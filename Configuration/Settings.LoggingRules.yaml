@@ -11,3 +11,4 @@ Netlogix:
       denyList:
         - 'Neos\Flow\Security\Exception\InvalidHashException'
         - 'Neos\Flow\Security\Exception\InvalidArgumentForHashGenerationException'
+        - 'Neos\Flow\Security\Exception\AccessDeniedException'
