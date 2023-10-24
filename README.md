@@ -198,3 +198,73 @@ Neos:
 ```
 
 Please note that this also disables logging of this exception to `Data/Logs/Exceptions`.
+
+## Encrypt POST payload
+
+By default, the array of POST payload data is transported to the sentry server "as is".
+
+When encryption is enabled and a valid rsa key fingerprint is set, the POST payload is stripped and replaced by an
+RSA encrypted string.
+
+```yaml
+Netlogix:
+  Sentry:
+
+    privacy:
+      encryptPostBody: true
+      rsaKeyFingerprint: '6ff568ae0f9b44b69627e275accf163a'
+```
+
+POST data without encryption usually looks like this in sentry:
+
+```json
+{
+    "--some-form": {
+        "__currentPage": 1,
+        "__state": "TmV0bG9naXguU2VudHJ5IHN0YXRlIGRhdGE=",
+        "__trustedProperties": "[Filtered]",
+        "firstName": "John",
+        "lastName": "Doe",
+        "birthday": "2021-01-01",
+        "email": "john.doe@netlogix.de",
+        "message": "Lorem ipsum dolor sit amet"
+    }
+}
+```
+
+With encryption enabled it looks like this:
+
+```json
+{
+    "__ENCRYPTED__DATA__": {
+        "encryptedData": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2ljaSBlbGl0LCBzZWQgZWl1c21vZCB0ZW1wb3IgaW5jaWR1bnQgdXQgbGFib3JlIGV0IGRvbG9yZSBtYWduYSBhbGlxdWEuIFV0IGVuaW0gYWQgbWluaW0gdmVuaWFtLCBxdWlzIG5vc3RydWQgZXhlcmNpdGF0aW9u",
+        "envelopeKey": "ZGVzZXJ1bnQgbW9sbGl0IGFuaW0gaWQgZXN0IGxhYm9ydW0=",
+        "initializationVector": "QmxpbmR0ZXh0"
+    }
+}
+```
+
+There will be an additional sentry field "Encrypted POST Data" which contains a backlink to encrypt and show the
+original data.
+
+In order for this to work, there must be an authentication provider in place that handels the Neos.Sentry controller.
+
+If this package is used in conjunction with the neos/neos CMS, the neos backend authentication provider can be tasked
+with this job. See the code snippet below.
+
+If this package is used without neos/neos, a custom privilege for policy `Netlogix.Sentry:Backend.EncryptedPayload`
+has to be configured.
+
+```yaml
+Neos:
+  Flow:
+    security:
+      authentication:
+        providers:
+          'Neos.Neos:Backend':
+            requestPatterns:
+              'Netlogix.Sentry:ShowEncryptedPayload':
+                pattern: ControllerObjectName
+                patternOptions:
+                  controllerObjectNamePattern: 'Netlogix\Sentry\Controller\.*'
+```

@@ -31,7 +31,10 @@ final class NetlogixIntegration implements IntegrationInterface
                 return $event;
             }
 
-            return self::handleEvent($event, $hint);
+            $event = self::handleEvent($event, $hint);
+            $event = self::encryptPostBody($event, $hint);
+
+            return $event;
         });
     }
 
@@ -78,6 +81,24 @@ final class NetlogixIntegration implements IntegrationInterface
             }
         } catch (Throwable $t) {
         }
+    }
+
+    /**
+     * FIXME: Remove this method, replace by yaml configuration once `EventProcessor` chain is implemented
+     *
+     * @see https://github.com/netlogix/Netlogix.Sentry/issues/29
+     *
+     * TODO:
+     *  - Crate `EventProcessor` chain as YAML configuration
+     *  - Execute `EventProcessor` (instanciate and call) in self::configureScopeForEvent()
+     *  - Replace Every ScopeProvider::collect*() method by individual classes
+     *  - Configure `EncryptedPayload` as `EventProcessor` in YAML
+     *  - Remove this method
+     */
+    public static function encryptPostBody(Event $event, EventHint $hint): Event
+    {
+        $encryptedPayload = Bootstrap::$staticObjectManager->get(\Netlogix\Sentry\EventProcessor\EncryptedPayload::class);
+        return $encryptedPayload->rewriteEvent($event, $hint);
     }
 
 }

@@ -1,0 +1,13 @@
+Netlogix:
+  Sentry:
+    privacy:
+
+      # Enable to replace the request POSt body with an encrypted version
+      encryptPostBody: false
+
+      # Enter a fingerprint of an RSA key stored in the RsaWallet
+      rsaKeyFingerprint: ''
+
+      # Enter the URI of the encryption module
+      # No route generation is done during exception handling
+      encryptionModuleUri: '/neos/sentry/show-parameters'

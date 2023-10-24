@@ -1,0 +1,20 @@
+privilegeTargets:
+
+  'Neos\Flow\Security\Authorization\Privilege\Method\MethodPrivilege':
+
+    'Netlogix.Sentry:Backend.EncryptedPayload':
+      matcher: 'method(Netlogix\Sentry\Controller\EncryptedPayloadController->.*())'
+
+roles:
+
+  'Neos.Flow:Anonymous':
+    privileges:
+      -
+        privilegeTarget: 'Netlogix.Sentry:Backend.EncryptedPayload'
+        permission: DENY
+
+  'Neos.Neos:Administrator':
+    privileges:
+      -
+        privilegeTarget: 'Netlogix.Sentry:Backend.EncryptedPayload'
+        permission: GRANT
