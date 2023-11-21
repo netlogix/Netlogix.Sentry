@@ -19,9 +19,11 @@ class EncryptionService
 {
     const ALGORITHM = 'AES256';
 
-    private string $rsaKeyFingerprint;
+    /** @var string */
+    private $rsaKeyFingerprint;
 
-    private string $encryptionModuleUri;
+    /** @var string */
+    private $encryptionModuleUri;
 
     private RsaWalletServiceInterface $rsaWallet;
 

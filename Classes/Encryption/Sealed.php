@@ -13,11 +13,14 @@ use Neos\Flow\Annotations as Flow;
  */
 final class Sealed
 {
-    private string $encryptedData;
+    /** @var string */
+    private $encryptedData;
 
-    private string $initializationVector;
+    /** @var string */
+    private $initializationVector;
 
-    private string $envelopeKey;
+    /** @var string */
+    private $envelopeKey;
 
     public function __construct(string $encryptedData, string $initializationVector, string $envelopeKeys)
     {
