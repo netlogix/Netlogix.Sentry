@@ -4,7 +4,9 @@ Neos:
     mvc:
       routes:
         'Netlogix.Sentry':
-          position: before Neos.Neos
+
+          # This package should be evaluated before Neos.Neos, but it doesn't depend on Neos.Neos.
+          position: start 100
 
     # Use the following configuration snippet when this package is used in conjunction with the neos/neos CMS.
     # Use something similar when another authentication provider will be used.
