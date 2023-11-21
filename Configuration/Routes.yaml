@@ -1,0 +1,9 @@
+- name: 'HashToken Login'
+  uriPattern: 'neos/sentry/show-parameters'
+  defaults:
+    '@package':    'Netlogix.Sentry'
+    '@controller': 'EncryptedPayload'
+    '@action':     'decrypt'
+    '@format':     'html'
+  appendExceedingArguments: TRUE
+  httpMethods: ['GET']

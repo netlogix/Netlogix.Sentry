@@ -1,0 +1,23 @@
+Neos:
+  Flow:
+
+    mvc:
+      routes:
+        'Netlogix.Sentry':
+          position: before Neos.Neos
+
+    # Use the following configuration snippet when this package is used in conjunction with the neos/neos CMS.
+    # Use something similar when another authentication provider will be used.
+    # Unfortunately, this cannot be done preemptively.
+    #
+    # security:
+    #   authentication:
+    #    providers:
+    #      'Neos.Neos:Backend':
+    #        requestPatterns:
+    #          'Netlogix.Sentry:ShowEncryptedPayload':
+    #            pattern: ControllerObjectName
+    #            patternOptions:
+    #              controllerObjectNamePattern: 'Netlogix\Sentry\Controller\.*'
+
+
