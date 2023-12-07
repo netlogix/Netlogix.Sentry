@@ -46,7 +46,9 @@ final class NetlogixIntegration implements IntegrationInterface
             }
 
             $event = self::handleEvent($event, $hint);
-            $event = self::encryptPostBody($event, $hint);
+            if ($event !== null) {
+                $event = self::encryptPostBody($event, $hint);
+            }
 
             return $event;
         });
