@@ -88,7 +88,9 @@ final class NetlogixIntegration implements IntegrationInterface
         $rewrittenExceptions = array_map(
             function ($exception) {
                 $stacktrace = $exception->getStacktrace();
-                $exception->setStacktrace(self::rewriteStacktraceAndFlagInApp($stacktrace));
+                if ($stacktrace !== null) {
+                    $exception->setStacktrace(self::rewriteStacktraceAndFlagInApp($stacktrace));
+                }
                 return $exception;
             },
             $event->getExceptions()
