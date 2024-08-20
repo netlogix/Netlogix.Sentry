@@ -1,0 +1,5 @@
+Netlogix:
+  Sentry:
+    featureFlags:
+      # Set to true when Neos.Fusion is installed
+      fusionFeatures: false

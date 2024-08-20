@@ -95,6 +95,19 @@ Netlogix:
 You can also use the `Netlogix\Sentry\Scope\Release\FlowSettings` to set the Release through Flow
 Configuration (`Netlogix.Sentry.release.setting`, set to `%env:SENTRY_RELEASE%` by default).
 
+## Feature Flags
+
+You can enable additional features that require other packages to be installed (e.g. Fusion Path collection) by
+adjusting the settings below `Netlogix.Sentry.featureFlags`. Take a look at Configuration/Settings.FeatureFlags.yaml.
+
+```yaml
+Netlogix:
+  Sentry:
+    featureFlags:
+      # Set to true when Neos.Fusion is installed
+      fusionFeatures: false
+```
+
 ## Custom Providers
 
 For each scope, you can implement your own providers. Each scope requires it's own interface:

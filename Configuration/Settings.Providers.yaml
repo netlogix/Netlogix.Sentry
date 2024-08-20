@@ -7,6 +7,7 @@ Netlogix:
         'Netlogix\Sentry\Scope\Environment\FlowSettings': true
 
       extra:
+        'Netlogix\Sentry\Scope\Extra\FusionPathProvider': true
         'Netlogix\Sentry\Scope\Extra\ReferenceCodeProvider': true
 
       release:
