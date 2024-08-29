@@ -7,6 +7,10 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
 use Netlogix\Sentry\Exception\Test;
 use Netlogix\Sentry\Scope\ScopeProvider;
+use Sentry\CheckInStatus;
+use Symfony\Component\Process\Process;
+use Throwable;
+use function Sentry\captureCheckIn;
 
 /**
  * @Flow\Scope("singleton")
@@ -57,6 +61,60 @@ class SentryCommandController extends CommandController
 
         $this->outputLine('Scope User:');
         \Neos\Flow\var_dump($this->scopeProvider->collectUser());
+    }
+
+    /**
+     * Run cron with sentry check-in
+     *
+     * Usage: ./flow sentry:runcron --slug="<slug>" <command with args>
+     * Example: ./flow sentry:runcron --slug="foo" cache:collectgarbage "Flow_Mvc_Routing_Route"
+     * Example: ./flow sentry:runcron --slug="foo" cache:collectgarbage --cache-identifier="Flow_Mvc_Routing_Route"
+     *
+     * @param string $slug
+     * @return void
+     * @throws Throwable
+     */
+    public function runCronCommand(string $slug): void
+    {
+        $args = $_SERVER['argv'];
+
+        // unset sentry:runcron
+        unset($args[1]);
+
+        $args = array_filter($args, fn (string $arg) => $arg !== '--slug=' . $slug && $arg !== $slug);
+        $id = captureCheckIn($slug, CheckInStatus::inProgress());
+        $checkIn = fn (CheckInStatus $status) => captureCheckIn($slug, $status, null, null, $id);
+
+        try {
+            $process = new Process($args);
+            $process->start();
+            $lastCheckIn = time();
+
+            foreach ($process as $type => $data) {
+                // check in in 1 minute intervals
+                // FIXME: this may lead to a monitoring timeout if the child process doesn't output anything for a long time
+                if (time() - $lastCheckIn > 60) {
+                    $checkIn(CheckInStatus::inProgress());
+                    $lastCheckIn = time();
+                }
+
+                if ($process::OUT === $type) {
+                    fputs(STDOUT, $data);
+                } else {
+                    fputs(STDERR, $data);
+                }
+            }
+
+            if ($process->getExitCode() !== 0) {
+                $checkIn(CheckInStatus::error());
+                return;
+            }
+
+            $checkIn(CheckInStatus::ok());
+        } catch (Throwable $e) {
+            $checkIn(CheckInStatus::error());
+            throw $e;
+        }
     }
 
 }
