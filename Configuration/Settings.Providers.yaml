@@ -8,6 +8,7 @@ Netlogix:
 
       extra:
         'Netlogix\Sentry\Scope\Extra\ReferenceCodeProvider': true
+        'Netlogix\Sentry\Scope\Extra\VariablesFromStackProvider': true
 
       release:
         # See Configuration/Settings.Release.yaml for settings

@@ -45,6 +45,11 @@ class SentryCommandController extends CommandController
 
         $this->outputLine();
 
+        $this->outputLine('Scope Extra:');
+        \Neos\Flow\var_dump($this->scopeProvider->collectContexts());
+
+        $this->outputLine();
+
         $this->outputLine('Scope Release:');
         \Neos\Flow\var_dump($this->scopeProvider->collectRelease());
 
