@@ -160,7 +160,7 @@ final class NetlogixIntegration implements IntegrationInterface
         return true;
     }
 
-    private static function scrubVariablesFromFrame($traceFunction, $frameVariables): array
+    private static function scrubVariablesFromFrame(string $traceFunction, array $frameVariables): array
     {
         if (!$frameVariables) {
             return $frameVariables;
