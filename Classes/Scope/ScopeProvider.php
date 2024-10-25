@@ -7,6 +7,7 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
 use Neos\Utility\PositionalArraySorter;
 use Netlogix\Sentry\Exception\InvalidProviderType;
+use Netlogix\Sentry\Scope\Context\ContextProvider;
 use Netlogix\Sentry\Scope\Environment\EnvironmentProvider;
 use Netlogix\Sentry\Scope\Extra\ExtraProvider;
 use Netlogix\Sentry\Scope\Release\ReleaseProvider;
@@ -24,6 +25,7 @@ class ScopeProvider
 
     private const SCOPE_ENVIRONMENT = 'environment';
     private const SCOPE_EXTRA = 'extra';
+    private const SCOPE_CONTEXTS = 'contexts';
     private const SCOPE_RELEASE = 'release';
     private const SCOPE_TAGS = 'tags';
     private const SCOPE_USER = 'user';
@@ -31,6 +33,7 @@ class ScopeProvider
     private const SCOPE_TYPE_MAPPING = [
         self::SCOPE_ENVIRONMENT => EnvironmentProvider::class,
         self::SCOPE_EXTRA => ExtraProvider::class,
+        self::SCOPE_CONTEXTS => ContextProvider::class,
         self::SCOPE_RELEASE => ReleaseProvider::class,
         self::SCOPE_TAGS => TagProvider::class,
         self::SCOPE_USER => UserProvider::class,
@@ -52,6 +55,7 @@ class ScopeProvider
     protected $providers = [
         self::SCOPE_ENVIRONMENT => [],
         self::SCOPE_EXTRA => [],
+        self::SCOPE_CONTEXTS => [],
         self::SCOPE_RELEASE => [],
         self::SCOPE_TAGS => [],
         self::SCOPE_USER => [],
@@ -96,6 +100,19 @@ class ScopeProvider
         }
 
         return $extra;
+    }
+
+    public function collectContexts(): array
+    {
+        $contexts = [];
+
+        foreach ($this->providers[self::SCOPE_CONTEXTS] as $provider) {
+            assert($provider instanceof ContextProvider);
+
+            $extra = array_merge_recursive($extra, $provider->getContexts());
+        }
+
+        return $contexts;
     }
 
     public function collectRelease(): ?string

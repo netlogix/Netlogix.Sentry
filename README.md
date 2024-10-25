@@ -266,3 +266,110 @@ Neos:
                 patternOptions:
                   controllerObjectNamePattern: 'Netlogix\Sentry\Controller\.*'
 ```
+
+## Scrubbing variables or adding more details
+
+### Allow in php.ini config
+
+Context variables depend on zend not removing exception arguments.
+Make sure  zend is not configured to remove arguments from exceptions to
+make use of fine-grained variable scrubbing and context-aware variable details.
+
+```ìni
+[php]
+zend.exception_ignore_args=0
+```
+
+### Scrub all frame arguments
+
+Ignoring exception arguments via zend setting would just remove every exception
+argument.
+Scrubbing can be re-added manually in userspace code by config settings.
+This  might be helpful for either different environments or deployment targets.
+
+```yaml
+Netlogix:
+  Sentry:
+    variableScrubbing:
+      scrubbing: true
+```
+
+### Prevent specific arguments from being scrubbed
+
+In contrast to zend.exception_ignore_args, having them scrubbed manually allows
+for keeping very specific variables by naming them individually.
+
+```yaml
+Netlogix:
+  Sentry:
+
+    variableScrubbing:
+
+      # Only works when manual scrubbing is enabled. Otherwise, all data is
+      # kept anyway.
+
+      scrubbing: true
+
+      # Keep certain frame variables even if scrubbing is enabled
+      #
+      # In contrast to using an individual RepresentationSerializer, this is context
+      # aware. Not every string should be displayed, but some might.
+      #
+      # Complex arguments might be obfuscated when being passed through the default
+      # Sentry RepresentationSerializerInterface::representationSerialize() and not very
+      # useful. Use our VariablesFromStackProvider and the "contextDetails" setting for
+      # more detailed logging.
+
+      keepFromScrubbing:
+
+        'Neos\ContentRepository\Search\Indexer\NodeIndexingManager::indexNode()':
+
+          # Class names cover "_Original" as well, but neither implementing
+          # interfaces nor extending classes. This only matches by exact string
+          # comparison.
+
+          className: 'Neos\ContentRepository\Search\Indexer\NodeIndexingManager'
+          methodName: 'indexNode'
+
+
+          # Arguments can only be argument names, not argument paths. Preventing
+          # certain arguments form being scrubbed happens after the Sentry
+          # RepresentationSerializer converted them, so no actual object
+          # information is available for detailed matching.
+
+          arguments:
+            - 'node'
+```
+
+### Add specific object information of frame variables to the sentry event context
+
+Data that is not ony "a representation of" a method argument but somewhere
+within any given data structure can be extracted and adde to the sentry event.
+
+This covers way more details about any given event frame, as long as the
+information is accessible by either public properties or a getter method.
+
+```yaml
+Netlogix:
+  Sentry:
+
+    variableScrubbing:
+
+      # In contrast to scrubbing and keeping specific arguments from being
+      # scrubbed, this context vars are added "in full" to the event context.
+
+      contextDetails:
+
+        'Neos\ContentRepository\Search\Indexer\NodeIndexingManager::indexNode()':
+          className: 'Neos\ContentRepository\Search\Indexer\NodeIndexingManager'
+          methodName: 'indexNode'
+          arguments:
+
+            # It's necessary to specify exactly which property paths should be
+            # added to prevent loosing information. Data not being specified is
+            # just dropped.
+
+            - 'node.path'
+            - 'node.identifier'
+            - 'node.name'
+```

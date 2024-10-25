@@ -1,0 +1,38 @@
+Netlogix:
+  Sentry:
+
+    variableScrubbing:
+
+      scrubbing: true
+
+      keepFromScrubbing:
+
+        'Neos\ContentRepository\Search\Indexer\NodeIndexingManager::indexNode()':
+          className: 'Neos\ContentRepository\Search\Indexer\NodeIndexingManager'
+          methodName: 'indexNode'
+          arguments:
+            - 'node'
+
+        'Flowpack\ElasticSearch\ContentRepositoryAdaptor\Indexer\NodeIndexer::indexNode()':
+          className: 'Flowpack\ElasticSearch\ContentRepositoryAdaptor\Indexer\NodeIndexer'
+          methodName: 'indexNode'
+          arguments:
+            - 'node'
+
+      contextDetails:
+
+        'Neos\ContentRepository\Search\Indexer\NodeIndexingManager::indexNode()':
+          className: 'Neos\ContentRepository\Search\Indexer\NodeIndexingManager'
+          methodName: 'indexNode'
+          arguments:
+            - 'node.path'
+            - 'node.identifier'
+            - 'node.name'
+
+        'Flowpack\ElasticSearch\ContentRepositoryAdaptor\Indexer\NodeIndexer::indexNode()':
+          className: 'Flowpack\ElasticSearch\ContentRepositoryAdaptor\Indexer\NodeIndexer'
+          methodName: 'indexNode'
+          arguments:
+            - 'node.path'
+            - 'node.identifier'
+            - 'node.name'

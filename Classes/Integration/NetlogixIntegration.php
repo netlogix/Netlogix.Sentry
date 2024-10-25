@@ -106,16 +106,17 @@ final class NetlogixIntegration implements IntegrationInterface
     private static function rewriteStacktraceAndFlagInApp(Stacktrace $stacktrace): Stacktrace
     {
         $frames = array_map(function ($frame) {
+            $functionName = self::replaceProxyClassName($frame->getFunctionName());
             $classPathAndFilename = self::getOriginalClassPathAndFilename($frame->getFile());
             return new Frame(
-                self::replaceProxyClassName($frame->getFunctionName()),
+                $functionName,
                 $classPathAndFilename,
                 $frame->getLine(),
                 self::replaceProxyClassName($frame->getRawFunctionName()),
                 $frame->getAbsoluteFilePath()
                     ? Files::concatenatePaths([FLOW_PATH_ROOT, trim($classPathAndFilename, '/')])
                     : null,
-                $frame->getVars(),
+                self::scrubVariablesFromFrame((string)$functionName, $frame->getVars()),
                 self::isInApp($classPathAndFilename)
             );
         }, $stacktrace->getFrames());
@@ -159,6 +160,51 @@ final class NetlogixIntegration implements IntegrationInterface
         return true;
     }
 
+    private static function scrubVariablesFromFrame(string $traceFunction, array $frameVariables): array
+    {
+        if (!$frameVariables) {
+            return $frameVariables;
+        }
+        assert(is_array($frameVariables));
+
+        $config = Bootstrap::$staticObjectManager
+            ->get(ConfigurationManager::class)
+            ->getConfiguration(
+            ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
+            'Netlogix.Sentry.variableScrubbing'
+        ) ?? [];
+
+        $scrubbing = (bool)($config['scrubbing'] ?? false);
+        if (!$scrubbing) {
+            return $frameVariables;
+        }
+
+        $keep = $config['keepFromScrubbing'] ?? [];
+        if (!$keep) {
+            return [];
+        }
+
+        $result = [];
+        $traceFunction = str_replace('_Original::', '::', $traceFunction);
+        foreach ($keep as $keepConfig) {
+            try {
+                ['className' => $className, 'methodName' => $methodName, 'arguments' => $arguments] = $keepConfig;
+                $configFunction = $className . '::' . $methodName;
+                if ($configFunction !== $traceFunction) {
+                    continue;
+                }
+                foreach ($arguments as $argumentName) {
+                    $result[$argumentName] = $frameVariables[$argumentName] ?? '👻';
+                }
+
+            } catch (\Exception $e) {
+            }
+
+        }
+
+        return $result;
+    }
+
     private static function configureScopeForEvent(Event $event, EventHint $hint): void
     {
         try {
@@ -170,6 +216,9 @@ final class NetlogixIntegration implements IntegrationInterface
             $configureEvent = function () use ($event, $scopeProvider) {
                 $event->setEnvironment($scopeProvider->collectEnvironment());
                 $event->setExtra($scopeProvider->collectExtra());
+                foreach ($scopeProvider->collectContexts() as $key => $value) {
+                    $event->setContext($key, $value);
+                }
                 $event->setRelease($scopeProvider->collectRelease());
                 $event->setTags($scopeProvider->collectTags());
                 $userData = $scopeProvider->collectUser();
