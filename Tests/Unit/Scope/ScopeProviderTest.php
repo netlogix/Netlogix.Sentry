@@ -40,13 +40,13 @@ class ScopeProviderTest extends UnitTestCase
     public function providers_are_sorted_according_to_settings(): void
     {
         $extra1 = $this->getMockBuilder(ExtraProvider::class)
-            ->setMockClassName('ExtraMock1')
+            ->setMockClassName('ExtraMock1' . $this->classNameSuffixForMocks())
             ->getMock();
         $extra1
             ->method('getExtra')
             ->willReturn(['foo' => 'bar']);
         $extra2 = $this->getMockBuilder(ExtraProvider::class)
-            ->setMockClassName('ExtraMock2')
+            ->setMockClassName('ExtraMock2' . $this->classNameSuffixForMocks())
             ->getMock();
         $extra2
             ->method('getExtra')
@@ -80,19 +80,19 @@ class ScopeProviderTest extends UnitTestCase
     public function providers_with_falsy_configuration_are_not_used(): void
     {
         $extra1 = $this->getMockBuilder(ExtraProvider::class)
-            ->setMockClassName('ExtraMock1')
+            ->setMockClassName('ExtraMock1' . $this->classNameSuffixForMocks())
             ->getMock();
         $extra1
             ->method('getExtra')
             ->willReturn(['foo' => 'bar']);
         $extra2 = $this->getMockBuilder(ExtraProvider::class)
-            ->setMockClassName('ExtraMock2')
+            ->setMockClassName('ExtraMock2' . $this->classNameSuffixForMocks())
             ->getMock();
         $extra2
             ->method('getExtra')
             ->willReturn(['foo' => 'baz']);
         $extra3 = $this->getMockBuilder(ExtraProvider::class)
-            ->setMockClassName('ExtraMock3')
+            ->setMockClassName('ExtraMock3' . $this->classNameSuffixForMocks())
             ->getMock();
         $extra3
             ->method('getExtra')
@@ -101,7 +101,7 @@ class ScopeProviderTest extends UnitTestCase
         $this->objectManagerMock
             ->expects(self::once())
             ->method('get')
-            ->with('ExtraMock1')
+            ->with('ExtraMock1' . $this->classNameSuffixForMocks())
             ->willReturn($extra1);
 
         $this->provider->injectSettings([
@@ -290,13 +290,13 @@ class ScopeProviderTest extends UnitTestCase
     public function extra_is_merged_recursively(): void
     {
         $extra1 = $this->getMockBuilder(ExtraProvider::class)
-            ->setMockClassName('ExtraMock1')
+            ->setMockClassName('ExtraMock1' . $this->classNameSuffixForMocks())
             ->getMock();
         $extra1
             ->method('getExtra')
             ->willReturn(['foo' => 'bar']);
         $extra2 = $this->getMockBuilder(ExtraProvider::class)
-            ->setMockClassName('ExtraMock2')
+            ->setMockClassName('ExtraMock2' . $this->classNameSuffixForMocks())
             ->getMock();
         $extra2
             ->method('getExtra')
@@ -330,13 +330,13 @@ class ScopeProviderTest extends UnitTestCase
     public function only_last_release_is_returned(): void
     {
         $release1 = $this->getMockBuilder(ReleaseProvider::class)
-            ->setMockClassName('ReleaseMock1')
+            ->setMockClassName('ReleaseMock1' . $this->classNameSuffixForMocks())
             ->getMock();
         $release1
             ->method('getRelease')
             ->willReturn('release-1');
         $release2 = $this->getMockBuilder(ReleaseProvider::class)
-            ->setMockClassName('ReleaseMock2')
+            ->setMockClassName('ReleaseMock2' . $this->classNameSuffixForMocks())
             ->getMock();
         $release2
             ->method('getRelease')
@@ -370,13 +370,13 @@ class ScopeProviderTest extends UnitTestCase
     public function tags_are_merged_and_override_each_other(): void
     {
         $tag1 = $this->getMockBuilder(TagProvider::class)
-            ->setMockClassName('TagMock1')
+            ->setMockClassName('TagMock1' . $this->classNameSuffixForMocks())
             ->getMock();
         $tag1
             ->method('getTags')
             ->willReturn(['foo' => 'bar']);
         $tag2 = $this->getMockBuilder(TagProvider::class)
-            ->setMockClassName('TagMock2')
+            ->setMockClassName('TagMock2' . $this->classNameSuffixForMocks())
             ->getMock();
         $tag2
             ->method('getTags')
@@ -410,13 +410,13 @@ class ScopeProviderTest extends UnitTestCase
     public function user_is_merged_recursively(): void
     {
         $user1 = $this->getMockBuilder(UserProvider::class)
-            ->setMockClassName('UserMock1')
+            ->setMockClassName('UserMock1' . $this->classNameSuffixForMocks())
             ->getMock();
         $user1
             ->method('getUser')
             ->willReturn(['foo' => 'bar']);
         $user2 = $this->getMockBuilder(UserProvider::class)
-            ->setMockClassName('UserMock2')
+            ->setMockClassName('UserMock2' . $this->classNameSuffixForMocks())
             ->getMock();
         $user2
             ->method('getUser')
@@ -487,6 +487,12 @@ class ScopeProviderTest extends UnitTestCase
         });
 
         self::assertNull($this->provider->getCurrentThrowable());
+    }
+
+    private function classNameSuffixForMocks(): string
+    {
+        $method = method_exists($this, 'nameWithDataSet') ? 'nameWithDataSet' : 'getName';
+        return '_' . [$this, $method]();
     }
 
 }
