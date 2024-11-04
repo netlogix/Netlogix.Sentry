@@ -14,6 +14,7 @@ Currently the following Flow versions are supported:
 
 * `^7.3`
 * `^8.0`
+* `^9.0`
 
 ## Setup
 
