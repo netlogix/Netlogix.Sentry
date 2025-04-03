@@ -11,12 +11,12 @@ jobs:
       fail-fast: false
       matrix:
         php-version: [ 8.0, 8.1, 8.2, 8.3 ]
-        flow-version: [ 8.3, '9.0.0-beta' ]
+        flow-version: [ 8.3, 9.0 ]
         exclude:
           - php-version: 8.0
-            flow-version: '9.0.0-beta'
+            flow-version: 9.0
           - php-version: 8.1
-            flow-version: '9.0.0-beta'
+            flow-version: 9.0
 
     env:
       APP_ENV: true
@@ -31,7 +31,7 @@ jobs:
           ini-values: opcache.fast_shutdown=0
 
       - name: "[1/5] Create composer project - Cache composer dependencies"
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache
           key: php-${{ matrix.php-version }}-flow-${{ matrix.flow-version }}-composer-${{ hashFiles('composer.json') }}
@@ -55,7 +55,7 @@ jobs:
         working-directory: ${{ env.FLOW_DIST_FOLDER }}
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ${{ env.FLOW_DIST_FOLDER }}/DistributionPackages/Netlogix.Sentry
 
