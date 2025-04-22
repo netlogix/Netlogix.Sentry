@@ -28,7 +28,7 @@ class Package extends \Neos\Flow\Package\Package
                     ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
                     'Netlogix.Sentry.inAppExclude'
                 );
-                
+
                 init([
                     'dsn' => $dsn,
                     'integrations' => [

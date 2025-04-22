@@ -5,6 +5,9 @@ privilegeTargets:
     'Netlogix.Sentry:Backend.EncryptedPayload':
       matcher: 'method(Netlogix\Sentry\Controller\EncryptedPayloadController->.*())'
 
+    'Netlogix.Sentry:Public.ContentSecurityPolicy':
+      matcher: 'method(Netlogix\Sentry\Controller\ContentSecurityPolicyController->.*())'
+
 roles:
 
   'Neos.Flow:Anonymous':
@@ -12,6 +15,9 @@ roles:
       -
         privilegeTarget: 'Netlogix.Sentry:Backend.EncryptedPayload'
         permission: DENY
+      -
+        privilegeTarget: 'Netlogix.Sentry:Public.ContentSecurityPolicy'
+        permission: GRANT
 
   'Neos.Neos:Administrator':
     privileges:
