@@ -1,0 +1,7 @@
+Neos:
+  Flow:
+    http:
+      middlewares:
+        'nlxSentryContentSecurityPolicy':
+          position: 'before dispatch'
+          middleware: 'Netlogix\Sentry\ContentSecurityPolicy\ContentSecurityPolicyMiddleware'

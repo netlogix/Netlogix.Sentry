@@ -1,0 +1,28 @@
+Netlogix:
+  Sentry:
+    csp:
+      # Enable Content-Security-Policy features (csp header & proxying to sentry)
+      enable: false
+
+      headers:
+        # Whether to use the Content-Security-Policy-Report-Only instead of the Content-Security-Policy header
+        reportOnly: true
+
+        # Regular expressions for paths where no csp headers should be set
+        blacklistedPaths:
+          '/neos.*': true
+
+        # List of csp header values to include. No need to specify report-uri or report-to as that is handled automatically
+        parts: []
+        #  parts:
+        #    - "default-src *"
+        #    - "script-src 'self' 'unsafe-eval' 'unsafe-inline'"
+        #    - "style-src 'self' 'unsafe-inline'"
+        #    - "img-src * data:"
+
+      reports:
+        # List of headers to include when proxying the client request to sentry
+        includedHeaders:
+          'Referer': true
+          'User-Agent': true
+          'Content-Type': true

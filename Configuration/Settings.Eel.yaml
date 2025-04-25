@@ -1,0 +1,5 @@
+Neos:
+  # Fusion might not be installed, but adding the Registry to the defaultContext won't hurt
+  Fusion:
+    defaultContext:
+      'Netlogix.CspRegistry': 'Netlogix\Sentry\ContentSecurityPolicy\Registry'

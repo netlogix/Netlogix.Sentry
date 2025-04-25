@@ -5,5 +5,15 @@
     '@controller': 'EncryptedPayload'
     '@action':     'decrypt'
     '@format':     'html'
-  appendExceedingArguments: TRUE
+  appendExceedingArguments: true
   httpMethods: ['GET']
+
+- name: 'Content Security Policy'
+  uriPattern: 'api/csp-report'
+  defaults:
+    '@package':    'Netlogix.Sentry'
+    '@controller': 'ContentSecurityPolicy'
+    '@action':     'index'
+    '@format':     'json'
+  appendExceedingArguments: true
+  httpMethods: ['POST']
