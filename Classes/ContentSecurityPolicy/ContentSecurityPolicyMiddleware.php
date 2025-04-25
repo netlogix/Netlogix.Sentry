@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Netlogix\Sentry\Http\Middleware;
+namespace Netlogix\Sentry\ContentSecurityPolicy;
 
 use GuzzleHttp\Psr7\Uri;
 use Neos\Flow\Annotations as Flow;
@@ -25,6 +25,9 @@ class ContentSecurityPolicyMiddleware implements MiddlewareInterface
 
     #[Flow\InjectConfiguration(path: 'csp.headers.parts')]
     protected array $parts = [];
+
+    #[Flow\Inject]
+    protected Registry $registry;
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -53,13 +56,27 @@ class ContentSecurityPolicyMiddleware implements MiddlewareInterface
             $headerName = 'Content-Security-Policy';
         }
 
+        $parts = $this->parts;
+        if ($this->registry->getSafeInlineScriptHashes() !== []) {
+            $safeInlineScripts = join(
+                ' ',
+                array_map(fn (string $hash) => sprintf("'%s'", $hash), $this->registry->getSafeInlineScriptHashes())
+            );
+            $existingScriptSrc = array_find_key($parts, fn (string $part) => str_starts_with($part, 'script-src'));
+
+            if ($existingScriptSrc !== null) {
+                $parts[$existingScriptSrc] = $parts[$existingScriptSrc] . ' ' . $safeInlineScripts;
+            } else {
+                $parts[] = 'script-src ' . $safeInlineScripts;
+            }
+        }
+
         $defaultParts = [
             'report-uri ' . $this->reportingEndpoint($request),
             'report-to csp-endpoint'
         ];
 
-        // TODO: Add support for nonces
-        $parts = array_merge($this->parts, $defaultParts);
+        $parts = array_merge($parts, $defaultParts);
 
         return $response
             ->withHeader($headerName, trim(join('; ', $parts), "; \n\r\t\v\0"));

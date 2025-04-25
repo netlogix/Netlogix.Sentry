@@ -4,4 +4,4 @@ Neos:
       middlewares:
         'nlxSentryContentSecurityPolicy':
           position: 'before dispatch'
-          middleware: 'Netlogix\Sentry\Http\Middleware\ContentSecurityPolicyMiddleware'
+          middleware: 'Netlogix\Sentry\ContentSecurityPolicy\ContentSecurityPolicyMiddleware'
