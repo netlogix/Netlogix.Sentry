@@ -374,3 +374,21 @@ Netlogix:
             - 'node.identifier'
             - 'node.name'
 ```
+
+## Cron Monitoring
+
+Add cron monitoring slug and schedule to your command parameters:
+>      --cron-monitor-slug=CRON-MONITOR-SLUG                  if command should be monitored then pass cron monitor slug
+>      --cron-monitor-schedule=CRON-MONITOR-SCHEDULE          if command should be monitored then pass cron monitor schedule
+>      --cron-monitor-max-time=CRON-MONITOR-MAX-TIME          if command should be monitored then pass cron monitor max execution time
+>      --cron-monitor-check-margin=CRON-MONITOR-CHECK-MARGIN  if command should be monitored then pass cron monitor check margin
+
+example usage in crontab
+```
+0 0 * * *   user    ./flow sentry:test --cron-monitor-slug=sentry_test_midnight --cron-monitor-schedule "0 0 * * *"
+```
+
+Optionally you can also set max run time and check margin (see https://docs.sentry.io/platforms/php/crons/)
+```
+0 0 * * *   user    ./flow sentry:test --cron-monitor-slug=sentry_test_midnight --cron-monitor-schedule "0 0 * * *" --cron-monitor-max-time=5 --cron-monitor-check-margin=2
+```
