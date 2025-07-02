@@ -248,6 +248,10 @@ final class NetlogixIntegration implements IntegrationInterface
      */
     public static function encryptPostBody(Event $event, EventHint $hint): Event
     {
+        if (Bootstrap::$staticObjectManager instanceof CompileTimeObjectManager) {
+            return $event;
+        }
+
         $encryptedPayload = Bootstrap::$staticObjectManager->get(\Netlogix\Sentry\EventProcessor\EncryptedPayload::class);
         return $encryptedPayload->rewriteEvent($event, $hint);
     }
