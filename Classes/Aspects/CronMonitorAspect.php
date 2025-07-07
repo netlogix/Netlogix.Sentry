@@ -73,8 +73,11 @@ class CronMonitorAspect
 
         $commandLineArguments = [];
         foreach ($commandLine as $rawCommandLineArgument) {
-            if (strpos($rawCommandLineArgument, '-') !== 0) {
+            if (!str_starts_with($rawCommandLineArgument, '-')) {
                 continue; // Skip non-argument parts of the command line
+            }
+            if (!str_contains($rawCommandLineArgument, '=')) {
+                continue; // Skip bool flags or args without explicit equal sign
             }
 
             list ($name, $value) = explode('=', $rawCommandLineArgument, 2);
