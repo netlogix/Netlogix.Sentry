@@ -394,3 +394,28 @@ Optionally, you can also set max run time and check margin (see https://docs.sen
 ```
 0 0 * * *   user    ./flow sentry:test --cron-monitor-slug=sentry_test_midnight --cron-monitor-schedule="0 0 * * *" --cron-monitor-max-time=5 --cron-monitor-check-margin=2
 ```
+
+## Providing additional Sentry options
+
+To specify additional options for the Sentry client, passed to the `init()` function, you can implement the `ClientOptionsProviderInterface`.
+You may want to extend the `BaseClientOptionsProvider`, which configures the default options.
+```php
+class MyClientOptionsProvider extends BaseClientOptionsProvider
+{
+    public function getClientOptions(): array
+    {
+        return [
+            ...parent::getClientOptions(),
+            'additional_option' => '...',
+        ];
+    }
+}
+```
+
+Then you need to configure your class in the `Objects.yaml`:
+```yaml
+Netlogix\Sentry\ClientOptions\ClientOptionsProviderInterface:
+  className: My\Package\MyClientOptionsProvider
+```
+
+As the client is initialized in the boot sequence, you may need to flush caches.
