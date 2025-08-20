@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace Netlogix\Sentry;
 
-use Neos\Flow\Configuration\ConfigurationManager;
+use Neos\Flow\Core\Booting\Sequence;
+use Neos\Flow\Core\Booting\Step;
 use Neos\Flow\Core\Bootstrap;
-use Netlogix\Sentry\Integration\NetlogixIntegration;
+use Netlogix\Sentry\ClientOptions\ClientOptionsProviderInterface;
+
 use function Sentry\init;
 
 class Package extends \Neos\Flow\Package\Package
@@ -15,28 +17,12 @@ class Package extends \Neos\Flow\Package\Package
     {
         $dispatcher = $bootstrap->getSignalSlotDispatcher();
 
-        $dispatcher->connect(
-            ConfigurationManager::class,
-            'configurationManagerReady',
-            static function (ConfigurationManager $configurationManager) {
-                $dsn = $configurationManager->getConfiguration(
-                    ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
-                    'Netlogix.Sentry.dsn'
-                );
-
-                $inAppExclude = $configurationManager->getConfiguration(
-                    ConfigurationManager::CONFIGURATION_TYPE_SETTINGS,
-                    'Netlogix.Sentry.inAppExclude'
-                );
-                
-                init([
-                    'dsn' => $dsn,
-                    'integrations' => [
-                        new NetlogixIntegration($inAppExclude ?? []),
-                    ]
-                ]);
+        $dispatcher->connect(Sequence::class, 'afterInvokeStep', function ($step) use ($bootstrap) {
+            if ($step instanceof Step && $step->getIdentifier() === 'neos.flow:objectmanagement:runtime') {
+                $clientOptionsProvider = $bootstrap->getObjectManager()->get(ClientOptionsProviderInterface::class);
+                init($clientOptionsProvider->getClientOptions());
             }
-        );
+        });
     }
 
 }
