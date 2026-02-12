@@ -77,17 +77,22 @@ final class VariablesFromStackProvider implements ExtraProvider
             if ($traceFunction !== $configFunction) {
                 continue;
             }
-            $values = [];
-            foreach ($argumentPaths as $argumentPathName => $argumentPathLookup) {
-                try {
-                    $values[$argumentPathName] = $this->representationSerialize(
-                        ObjectAccess::getPropertyPath($trace['args'], $argumentPathLookup)
-                    );
-                } catch (Throwable $t) {
-                    $values[$argumentPathName] = '👻';
+
+            if (!isset($trace['args'])) {
+                yield [$configFunction => ['💥' => 'Argument tracing is disabled. To enable, set `zend.exception_ignore_args=0` ⚙️']];
+            } else {
+                $values = [];
+                foreach ($argumentPaths as $argumentPathName => $argumentPathLookup) {
+                    try {
+                        $values[$argumentPathName] = $this->representationSerialize(
+                            ObjectAccess::getPropertyPath($trace['args'], $argumentPathLookup)
+                        );
+                    } catch (Throwable $t) {
+                        $values[$argumentPathName] = '👻';
+                    }
                 }
+                yield [$configFunction => $values];
             }
-            yield [$configFunction => $values];
         }
     }
 
