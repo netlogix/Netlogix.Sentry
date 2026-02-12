@@ -136,8 +136,14 @@ final class VariablesFromStackProvider implements ExtraProvider
 
             $reflection = new MethodReflection($className, $methodName);
             foreach ($reflection->getParameters() as $parameter) {
-                $search = sprintf('/^%s./', $parameter->getName());
-                $replace = sprintf('%d.', $parameter->getPosition());
+                $search = [
+                    sprintf('/^%s\\./', $parameter->getName()),
+                    sprintf('/^%s$/', $parameter->getName()),
+                ];
+                $replace = [
+                    sprintf('%d.', $parameter->getPosition()),
+                    $parameter->getPosition(),
+                ];
                 $argumentPaths = preg_replace($search, $replace, $argumentPaths);
             }
 
