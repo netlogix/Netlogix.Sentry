@@ -77,21 +77,39 @@ final class VariablesFromStackProvider implements ExtraProvider
             if ($traceFunction !== $configFunction) {
                 continue;
             }
+
+            yield from self::buildReadableRepresentationOfTrace($configFunction, $argumentPaths, $trace);
+        }
+    }
+
+    /**
+     * @internal This method is only public because mocking \Throwable::getTrace() is not possible.
+     *
+     * @param string $callablePattern
+     * @param array<string, string> $argumentPaths
+     * @param array<mixed> $trace
+     * @return Traversable<mixed>
+     */
+    public static function buildReadableRepresentationOfTrace(string $callablePattern, array $argumentPaths, array $trace): Traversable
+    {
+        if (!isset($trace['args'])) {
+            yield [$callablePattern => ['💥' => 'Argument tracing is disabled. To enable, set `zend.exception_ignore_args=0` ⚙️']];
+        } else {
             $values = [];
             foreach ($argumentPaths as $argumentPathName => $argumentPathLookup) {
                 try {
-                    $values[$argumentPathName] = $this->representationSerialize(
+                    $values[$argumentPathName] = self::representationSerialize(
                         ObjectAccess::getPropertyPath($trace['args'], $argumentPathLookup)
                     );
                 } catch (Throwable $t) {
                     $values[$argumentPathName] = '👻';
                 }
             }
-            yield [$configFunction => $values];
+            yield [$callablePattern => $values];
         }
     }
 
-    private function representationSerialize($value)
+    private static function representationSerialize($value)
     {
         static $representationSerialize;
 
@@ -136,8 +154,14 @@ final class VariablesFromStackProvider implements ExtraProvider
 
             $reflection = new MethodReflection($className, $methodName);
             foreach ($reflection->getParameters() as $parameter) {
-                $search = sprintf('/^%s./', $parameter->getName());
-                $replace = sprintf('%d.', $parameter->getPosition());
+                $search = [
+                    sprintf('/^%s\\./', $parameter->getName()),
+                    sprintf('/^%s$/', $parameter->getName()),
+                ];
+                $replace = [
+                    sprintf('%d.', $parameter->getPosition()),
+                    $parameter->getPosition(),
+                ];
                 $argumentPaths = preg_replace($search, $replace, $argumentPaths);
             }
 
