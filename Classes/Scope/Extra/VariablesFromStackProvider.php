@@ -78,25 +78,38 @@ final class VariablesFromStackProvider implements ExtraProvider
                 continue;
             }
 
-            if (!isset($trace['args'])) {
-                yield [$configFunction => ['💥' => 'Argument tracing is disabled. To enable, set `zend.exception_ignore_args=0` ⚙️']];
-            } else {
-                $values = [];
-                foreach ($argumentPaths as $argumentPathName => $argumentPathLookup) {
-                    try {
-                        $values[$argumentPathName] = $this->representationSerialize(
-                            ObjectAccess::getPropertyPath($trace['args'], $argumentPathLookup)
-                        );
-                    } catch (Throwable $t) {
-                        $values[$argumentPathName] = '👻';
-                    }
-                }
-                yield [$configFunction => $values];
-            }
+            yield from self::buildReadableRepresentationOfTrace($configFunction, $argumentPaths, $trace);
         }
     }
 
-    private function representationSerialize($value)
+    /**
+     * @internal This method is only public because mocking \Throwable::getTrace() is not possible.
+     *
+     * @param string $callablePattern
+     * @param array<string, string> $argumentPaths
+     * @param array<mixed> $trace
+     * @return Traversable<mixed>
+     */
+    public static function buildReadableRepresentationOfTrace(string $callablePattern, array $argumentPaths, array $trace): Traversable
+    {
+        if (!isset($trace['args'])) {
+            yield [$callablePattern => ['💥' => 'Argument tracing is disabled. To enable, set `zend.exception_ignore_args=0` ⚙️']];
+        } else {
+            $values = [];
+            foreach ($argumentPaths as $argumentPathName => $argumentPathLookup) {
+                try {
+                    $values[$argumentPathName] = self::representationSerialize(
+                        ObjectAccess::getPropertyPath($trace['args'], $argumentPathLookup)
+                    );
+                } catch (Throwable $t) {
+                    $values[$argumentPathName] = '👻';
+                }
+            }
+            yield [$callablePattern => $values];
+        }
+    }
+
+    private static function representationSerialize($value)
     {
         static $representationSerialize;
 
