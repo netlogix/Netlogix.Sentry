@@ -33,7 +33,7 @@ class VariablesFromStackProviderTest extends UnitTestCase
         self::assertEquals([
             [
                 'foo::bar()' => [
-                    'baz' => 'some value'
+                    'baz' => '"some value"'
                 ]
             ]
         ], $result);
@@ -65,8 +65,8 @@ class VariablesFromStackProviderTest extends UnitTestCase
         self::assertEquals([
             [
                 'foo::bar()' => [
-                    'baz.name' => 'Stephan',
-                    'baz.gender' => 'male',
+                    'baz.name' => '"Stephan"',
+                    'baz.gender' => '"male"',
                 ]
             ]
         ], $result);
